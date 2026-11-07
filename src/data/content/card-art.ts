@@ -40,6 +40,8 @@ export interface CardArtIdentifier {
   artStats?: CardArtStats;
   /** Ignore art packs: the Card Editor, and the fallback when an art pack image fails to load. */
   officialArt?: boolean;
+  /** Hero card code of the seat that owns the card; selects art packs tied to a hero (ADR-0093). */
+  heroCode?: string;
 }
 
 export interface ArtPackArt {
@@ -79,24 +81,23 @@ export function artFileName(
 let indexedContent: LoadedContent | null = null;
 let indexedArtPackVersion = -1;
 let packByCode = new Map<string, LoadedPack>();
-let artPackByCode = new Map<string, ArtPackManifest>();
+let artPacksByCode = new Map<string, ArtPackManifest[]>();
 
 function refreshCardArtIndex(): void {
   const content = getLoadedContent();
   const version = getArtPackVersion();
   if (content === indexedContent && version === indexedArtPackVersion) return;
   packByCode = new Map();
-  artPackByCode = new Map();
+  artPacksByCode = new Map();
   for (const pack of content.packs) {
     for (const card of pack.cards) if (!packByCode.has(card.code)) packByCode.set(card.code, pack);
   }
-  // Art packs are ordered by folder name, so the first one that is switched on and lists a card
-  // is the one used. A pack the player switched off shows nothing.
+  // Art packs are ordered by folder name. A pack the player switched off shows nothing.
   const disabled = getDisabledArtPacks();
   for (const artPack of content.artPacks) {
     if (disabled.has(artPack.id)) continue;
     for (const code of Object.keys(artPack.cards)) {
-      if (!artPackByCode.has(code)) artPackByCode.set(code, artPack);
+      artPacksByCode.set(code, [...(artPacksByCode.get(code) ?? []), artPack]);
     }
   }
   indexedContent = content;
@@ -109,9 +110,22 @@ function ownerPack(code: string): LoadedPack | undefined {
   return packByCode.get(code.trim());
 }
 
-function artPackFor(code: string): ArtPackManifest | undefined {
+/**
+ * The art pack a card shows: the first pack that is on, lists the card and is tied to the hero who
+ * owns it (ADR-0093, decision 16), otherwise the first such pack tied to no hero. A card with no
+ * hero owner (villain, scheme, token) never uses a pack tied to a hero.
+ */
+function artPackFor({ code, heroCode }: CardArtIdentifier): ArtPackManifest | undefined {
   refreshCardArtIndex();
-  return artPackByCode.get(code.trim());
+  const packs = artPacksByCode.get((code ?? '').trim()) ?? [];
+  return (
+    packs.find((pack) => heroCode !== undefined && pack.heroes?.includes(heroCode)) ??
+    packs.find((pack) => pack.heroes === undefined)
+  );
+}
+
+function asIdentifier(card: CardArtIdentifier | string): CardArtIdentifier {
+  return typeof card === 'string' ? { code: card } : card;
 }
 
 /** The route URL of one image of an art pack (ADR-0093). */
@@ -124,10 +138,12 @@ export function artPackImageUrl(artPack: ArtPackManifest, image: ArtPackImage): 
  * whose printed ATK and hit points are both at or below the card's current values, otherwise the
  * lowest one. A card with no known stats shows the lowest one.
  */
-export function artPackArt(code: string, stats?: CardArtStats): ArtPackArt | undefined {
-  const artPack = artPackFor(code);
+export function artPackArt(card: CardArtIdentifier | string): ArtPackArt | undefined {
+  const identifier = asIdentifier(card);
+  const artPack = artPackFor(identifier);
   if (!artPack) return undefined;
-  const lowestFirst = [...artPack.cards[code.trim()]].sort(
+  const stats = identifier.artStats;
+  const lowestFirst = [...artPack.cards[identifier.code.trim()]].sort(
     (a, b) => (a.attack ?? 0) + (a.hitPoints ?? 0) - ((b.attack ?? 0) + (b.hitPoints ?? 0)),
   );
   const reached = stats
@@ -145,16 +161,18 @@ export function artPackArt(code: string, stats?: CardArtStats): ArtPackArt | und
 }
 
 /** Whether the card's art pack image changes with its current stats. */
-export function artPackHasStatImages(code: string): boolean {
-  const artPack = artPackFor(code);
-  return artPack !== undefined && artPack.cards[code.trim()][0].attack !== undefined;
+export function artPackHasStatImages(card: CardArtIdentifier | string): boolean {
+  const identifier = asIdentifier(card);
+  const artPack = artPackFor(identifier);
+  return artPack !== undefined && artPack.cards[identifier.code.trim()][0].attack !== undefined;
 }
 
 /** Every image a card can show from its art pack, for preloading. */
-export function artPackImageUrls(code: string): string[] {
-  const artPack = artPackFor(code);
+export function artPackImageUrls(card: CardArtIdentifier | string): string[] {
+  const identifier = asIdentifier(card);
+  const artPack = artPackFor(identifier);
   if (!artPack) return [];
-  return artPack.cards[code.trim()].map((image) => artPackImageUrl(artPack, image));
+  return artPack.cards[identifier.code.trim()].map((image) => artPackImageUrl(artPack, image));
 }
 
 /** Id of the pack that owns a card code, or `undefined` when no loaded pack has it. */
@@ -167,8 +185,8 @@ export function artPackId(code: string): string | undefined {
  * `/card-art/<packId>/<file>.png` for a card of a loaded pack, otherwise an empty string.
  */
 export function localArtUrl(card: CardArtIdentifier | string): string {
-  const { code, artStats, officialArt } = typeof card === 'string' ? ({ code: card } as CardArtIdentifier) : card;
-  const art = officialArt ? undefined : artPackArt(code ?? '', artStats);
+  const { code, officialArt } = asIdentifier(card);
+  const art = officialArt ? undefined : artPackArt(card);
   if (art) return art.url;
   const pack = ownerPack(code ?? '');
   if (!pack) return '';

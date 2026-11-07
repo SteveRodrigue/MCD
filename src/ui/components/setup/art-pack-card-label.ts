@@ -1,4 +1,5 @@
 import { getLoadedContent } from '../../../data/content/store';
+import type { ArtPackManifest } from '../../../data/packs/art-pack';
 
 const TYPE_LABEL: Record<string, string> = {
   hero: 'Hero',
@@ -30,4 +31,11 @@ export function describeArtPackCard(code: string): ArtPackCardDescription {
     known: true,
     packOff: label.source === 'off-pack',
   };
+}
+
+/** "For: Iron Man (01029a)" for a pack tied to heroes, or nothing for a pack that is not. */
+export function describeArtPackHeroes(artPack: ArtPackManifest): string | undefined {
+  if (!artPack.heroes) return undefined;
+  const names = artPack.heroes.map((code) => `${describeArtPackCard(code).name} (${code})`);
+  return `For: ${names.join(', ')}`;
 }

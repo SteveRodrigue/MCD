@@ -5,7 +5,11 @@ import type { ArtPackImage, ArtPackManifest } from '../../../data/packs/art-pack
 import { ModalScaffold } from '../../theme/ModalScaffold';
 import { ThemedButton } from '../../theme/kit/controls';
 import { useModalStyle } from '../../theme/useModalStyle';
-import { describeArtPackCard, type ArtPackCardDescription } from './art-pack-card-label';
+import {
+  describeArtPackCard,
+  describeArtPackHeroes,
+  type ArtPackCardDescription,
+} from './art-pack-card-label';
 
 interface BrowseItem {
   code: string;
@@ -107,6 +111,11 @@ export const ArtPackBrowser: React.FC<ArtPackBrowserProps> = ({ artPack, onClose
       testId="art-pack-browser"
     >
       <p className="text-sm">{artPack.description}</p>
+      {describeArtPackHeroes(artPack) && (
+        <p className="text-sm font-bold" data-testid="art-pack-heroes">
+          {describeArtPackHeroes(artPack)}
+        </p>
+      )}
       <p className={`text-xs ${style.muted}`}>
         Art by {artPack.credit.author}
         {artPack.credit.unofficial && ' (unofficial)'} ·{' '}

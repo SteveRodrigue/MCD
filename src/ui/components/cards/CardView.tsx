@@ -18,6 +18,7 @@ import {
 import { FormattedCardText } from './FormattedCardText';
 import { useOptionalGameSettings } from '../../context/useGameSettings';
 import { CardContextMenu } from './CardContextMenu';
+import { useCardArtHero } from '../../context/CardArtHeroContext';
 import { CARD_ZOOM_MARGIN, cardZoomScale } from './card-zoom';
 import { Z_CLASS } from '../../styles/z-layers';
 import { useModalStyle } from '../../theme/useModalStyle';
@@ -87,7 +88,8 @@ const CardViewImpl: React.FC<CardViewProps> = ({
 
   const { style } = useModalStyle();
   const [failedArtPackUrl, setFailedArtPackUrl] = useState<string | null>(null);
-  const art = officialArtOnly ? undefined : artPackArt(card.code, artStats);
+  const heroCode = useCardArtHero(instance?.ownerId);
+  const art = officialArtOnly ? undefined : artPackArt({ code: card.code, artStats, heroCode });
   const usesArtPack = art !== undefined && art.url !== failedArtPackUrl;
 
   // A shell's only face is its own card, so its art may show. Any other facedown card hides itself.
@@ -97,6 +99,7 @@ const CardViewImpl: React.FC<CardViewProps> = ({
 
   const { artUrl, loading, error } = useCardArt(card, {
     artStats,
+    heroCode,
     officialArt: !usesArtPack || isFacedown,
   });
   const [imageSrc, setImageSrc] = useState<string | null>(artUrl);
@@ -429,6 +432,7 @@ const CardViewImpl: React.FC<CardViewProps> = ({
           card={card}
           position={contextMenuPos}
           onClose={() => setContextMenuPos(null)}
+          heroCode={heroCode}
         />
       )}
     </div>

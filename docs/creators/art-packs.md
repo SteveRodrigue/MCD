@@ -41,18 +41,19 @@ A pack is on as soon as it is found. In the Options menu (**Art Packs**) and on 
 }
 ```
 
-| Property                   | Required  | Meaning                                                                                                         |
-| -------------------------- | --------- | --------------------------------------------------------------------------------------------------------------- |
-| `id`                       | yes       | Lowercase letters, digits, `-` and `_`, 2 to 32 characters, starting with a letter. Must equal the folder name. |
-| `name`                     | yes       | Display name in the art pack list.                                                                              |
-| `description`              | yes       | 1 to 300 characters: what the pack contains and when to use it. Shown in the art pack list and the Browse view. |
-| `credit.author`            | yes       | Who made the images. Shown in the card's right-click menu and on the Content screen.                            |
-| `credit.sourceUrl`         | yes       | Where the images came from.                                                                                     |
-| `credit.unofficial`        | yes       | `true` shows "(unofficial)" beside the author.                                                                  |
-| `cards`                    | yes       | Card code to its images.                                                                                        |
-| `cards.<code>[].file`      | yes       | A PNG in this folder: letters, digits, `_` and `-`, ending in `.png`.                                           |
-| `cards.<code>[].attack`    | see below | The ATK this image prints.                                                                                      |
-| `cards.<code>[].hitPoints` | see below | The hit points this image prints.                                                                               |
+| Property                   | Required  | Meaning                                                                                                          |
+| -------------------------- | --------- | ---------------------------------------------------------------------------------------------------------------- |
+| `id`                       | yes       | Lowercase letters, digits, `-` and `_`, 2 to 32 characters, starting with a letter. Must equal the folder name.  |
+| `name`                     | yes       | Display name in the art pack list.                                                                               |
+| `description`              | yes       | 1 to 300 characters: what the pack contains and when to use it. Shown in the art pack list and the Browse view.  |
+| `credit.author`            | yes       | Who made the images. Shown in the card's right-click menu and on the Content screen.                             |
+| `credit.sourceUrl`         | yes       | Where the images came from.                                                                                      |
+| `credit.unofficial`        | yes       | `true` shows "(unofficial)" beside the author.                                                                   |
+| `heroes`                   | no        | Hero card codes this pack is tied to (see [Packs for one hero](#packs-for-one-hero)). Leave it out for any hero. |
+| `cards`                    | yes       | Card code to its images.                                                                                         |
+| `cards.<code>[].file`      | yes       | A PNG in this folder: letters, digits, `_` and `-`, ending in `.png`.                                            |
+| `cards.<code>[].attack`    | see below | The ATK this image prints.                                                                                       |
+| `cards.<code>[].hitPoints` | see below | The hit points this image prints.                                                                                |
 
 ## Which cards
 
@@ -116,14 +117,14 @@ It does not open the images, so their size and shape are up to you (see below).
 
 ## When something is wrong
 
-| Problem                                       | What happens                                                                  |
-| --------------------------------------------- | ----------------------------------------------------------------------------- |
-| Invalid `art-pack.json`                       | The pack is skipped. The Content screen shows why.                            |
-| A listed PNG is missing from the folder       | A warning on the Content screen; that image is not used.                      |
-| A PNG fails to load                           | The card shows its official art, or the labelled card back for a token.       |
-| A listed card is in no installed pack         | A warning on the Content screen; its image shows in Browse under its code.    |
-| Two packs list the same card                  | The first by folder name wins, with a warning on the Content screen.          |
-| Stat images on a card with no stats to follow | The card always shows its lowest image, with a warning on the Content screen. |
+| Problem                                       | What happens                                                                                                            |
+| --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Invalid `art-pack.json`                       | The pack is skipped. The Content screen shows why.                                                                      |
+| A listed PNG is missing from the folder       | A warning on the Content screen; that image is not used.                                                                |
+| A PNG fails to load                           | The card shows its official art, or the labelled card back for a token.                                                 |
+| A listed card is in no installed pack         | A warning on the Content screen; its image shows in Browse under its code.                                              |
+| Two packs list the same card                  | The first by folder name wins, with a warning on the Content screen. Two packs tied to different heroes do not compete. |
+| Stat images on a card with no stats to follow | The card always shows its lowest image, with a warning on the Content screen.                                           |
 
 ## Hero and alter-ego art
 
@@ -138,6 +139,32 @@ Identity cards work like any other card: one code per side, one image per code.
 - Only heroes with a starter deck can start a game today (the five Core heroes). The others show in Browse, and their art is ready for when they are playable. Third faces and Ironheart's later versions do not come up in a game yet.
 
 The game ships no converter. Make the PNGs by hand or with your own tools.
+
+## Packs for one hero
+
+Some packs belong to one hero, such as an Organized Play pack. List the hero's card codes in `heroes`, and the pack shows only on that hero's cards:
+
+```json
+{
+  "id": "op_black_panther",
+  "name": "Black Panther Organized Play",
+  "description": "Organized Play art for both versions of Black Panther.",
+  "credit": { "author": "Who made it", "sourceUrl": "https://example.com/op", "unofficial": false },
+  "heroes": ["01040a", "<code of the second version>"],
+  "cards": {
+    "01040a": [{ "file": "01040a.png" }],
+    "01002": [{ "file": "shared_card.png" }]
+  }
+}
+```
+
+- `heroes` takes the hero side (`a`) code of each version. A hero with two versions (Black Panther as T'Challa and as Shuri) has two codes. List both to use one pack for both, or make one pack per version.
+- The pack shows on every card the player of that hero owns: identity, hand, board, discard, and a prompt for that player. Two players with different heroes each see their own pack on a card both decks hold.
+- It never shows on another hero's cards, on the villain, schemes, minions or tokens. A pack with no `heroes` still shows everywhere.
+- On the setup screen, the hero picked for a seat shows its pack at once.
+- Where two packs list the same card for one hero, the first by folder name wins, with a warning on the Content screen. Packs for different heroes may list the same card.
+- The Options menu and the Content screen show "For: <hero names>" on the pack. The switch and Browse work as for any pack.
+- The loader warns about a hero code that is in no installed pack or is not a hero card.
 
 ## Clearing the image cache
 

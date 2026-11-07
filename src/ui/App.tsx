@@ -4,7 +4,7 @@ import { setupGame, dispatchAction, getStarterDeck, GameState, InfiniteLoopError
 import type { SetupSelection } from './components/setup/ScenarioSelector';
 import { scheduleGameStateSnapshot } from './services/gamestate-logger-service';
 import { resetSessionSyncTracking } from './services/stats-storage-service';
-import { gameArtCodes, preloadArtPackImages } from './services/card-cache-service';
+import { gameArtCards, preloadArtPackImages } from './services/card-cache-service';
 
 import { GameSettingsProvider } from './context/GameSettingsProvider';
 import { useGameSettings } from './context/useGameSettings';
@@ -15,6 +15,7 @@ import { isGameStage } from './theme/game-stage';
 import { ThemeProvider } from './theme/ThemeProvider';
 import { useGameTheme } from './theme/useGameTheme';
 import { GameSessionProvider } from './context/GameStateContext';
+import { CardArtHeroes } from './context/CardArtHeroContext';
 import { ScenarioRegistry } from '../engine/scenarios';
 
 const ScenarioSelector = React.lazy(() =>
@@ -154,7 +155,7 @@ const AppContent: React.FC = () => {
     // Token and identity art load with the game, so the next stat image or form shows at once (ADR-0093)
     const tokens = ScenarioRegistry.get(selection.scenarioId).definition.tokens ?? [];
     void preloadArtPackImages(
-      gameArtCodes(
+      gameArtCards(
         newGameState,
         tokens.map((token) => token.code),
       ),
@@ -257,17 +258,21 @@ const AppContent: React.FC = () => {
           {stage === 'CONTENT' && <ContentScreen onBack={() => setStage('SETUP')} />}
 
           {stage === 'MULLIGAN' && gameState && (
-            <MulliganScreen
-              gameState={gameState}
-              onResolveHeroMulligan={handleResolveHeroMulligan}
-              onStartScenario={handleStartScenario}
-              onResolvePrompt={handleResolveSetupPrompt}
-            />
+            <CardArtHeroes players={gameState.players}>
+              <MulliganScreen
+                gameState={gameState}
+                onResolveHeroMulligan={handleResolveHeroMulligan}
+                onStartScenario={handleStartScenario}
+                onResolvePrompt={handleResolveSetupPrompt}
+              />
+            </CardArtHeroes>
           )}
 
           {stage === 'IN_GAME' && gameState && (
             <GameSessionProvider state={gameState} dispatch={handleDispatchAction}>
-              <GameBoard onReset={handleReset} />
+              <CardArtHeroes players={gameState.players}>
+                <GameBoard onReset={handleReset} />
+              </CardArtHeroes>
             </GameSessionProvider>
           )}
         </React.Suspense>

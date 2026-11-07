@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Newspaper } from 'lucide-react';
 import { useCardArt } from '../../hooks/useCardArt';
+import { useCardArtHero } from '../../context/CardArtHeroContext';
 import { useOptionalGameSession } from '../../context/GameStateContext';
 import { firstInPlayArtStats } from '../../services/card-art-stats';
 import {
@@ -27,9 +28,10 @@ const CardArtThumbnailView: React.FC<CardArtThumbnailProps & { artStats?: CardAr
   artStats,
 }) => {
   const [failedArtPackUrl, setFailedArtPackUrl] = useState<string | null>(null);
-  const art = cardCode ? artPackArt(cardCode, artStats) : undefined;
+  const heroCode = useCardArtHero();
+  const art = cardCode ? artPackArt({ code: cardCode, artStats, heroCode }) : undefined;
   const usesArtPack = art !== undefined && art.url !== failedArtPackUrl;
-  const { artUrl } = useCardArt(cardCode, { artStats, officialArt: !usesArtPack });
+  const { artUrl } = useCardArt(cardCode, { artStats, heroCode, officialArt: !usesArtPack });
   const [imgFailed, setImgFailed] = useState(false);
 
   const remoteUrl = cardCode ? remoteArtUrl(cardCode) : '';
@@ -71,12 +73,14 @@ const StatImageThumbnail: React.FC<CardArtThumbnailProps> = (props) => {
 };
 
 /** Only stat images subscribe to game state, so other thumbnails keep their render cost. */
-const CardArtThumbnailImpl: React.FC<CardArtThumbnailProps> = (props) =>
-  props.cardCode && artPackHasStatImages(props.cardCode) ? (
+const CardArtThumbnailImpl: React.FC<CardArtThumbnailProps> = (props) => {
+  const heroCode = useCardArtHero();
+  return props.cardCode && artPackHasStatImages({ code: props.cardCode, heroCode }) ? (
     <StatImageThumbnail {...props} />
   ) : (
     <CardArtThumbnailView {...props} />
   );
+};
 
 /** Skips re-rendering when a state update leaves its props identical (ADR-0089). */
 export const CardArtThumbnail = React.memo(CardArtThumbnailImpl);

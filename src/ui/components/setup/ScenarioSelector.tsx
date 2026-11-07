@@ -38,6 +38,7 @@ import { ThemedButton, ToneButton } from '../../theme/kit/controls';
 import { useModalStyle } from '../../theme/useModalStyle';
 import { useThemeExtras } from '../../theme/useThemeExtras';
 import { CardView } from '../cards/CardView';
+import { CardArtSeat } from '../../context/CardArtHeroContext';
 
 export const RANDOM_MODULAR_SET_CODE = 'random';
 
@@ -784,7 +785,9 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
                         {/* Hero Card Miniature Thumbnail (Hero Form) */}
                         <div className="shrink-0 relative z-content">
                           {heroCard ? (
-                            <CardView card={heroCard} size="sm" />
+                            <CardArtSeat heroCode={heroCard.code}>
+                              <CardView card={heroCard} size="sm" />
+                            </CardArtSeat>
                           ) : (
                             <div
                               className={`w-28 h-40 flex items-center justify-center text-xs ${style.inset}`}

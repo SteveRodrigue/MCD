@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { CheckCircle2, Play, Users, Check, Crown } from 'lucide-react';
 import { GameState, CardInstance, peekDecisionPrompt } from '../../../engine';
 import { CardView } from '../cards/CardView';
+import { CardArtSeat } from '../../context/CardArtHeroContext';
 import { ToneButton } from '../../theme/kit/controls';
 import { useModalStyle } from '../../theme/useModalStyle';
 import { useThemeExtras } from '../../theme/useThemeExtras';
@@ -193,31 +194,33 @@ export const MulliganScreen: React.FC<MulliganScreenProps> = ({
         )}
 
         {/* Hand Cards Grid */}
-        <div className="flex flex-wrap justify-center gap-4 mb-4 min-h-[260px] items-center">
-          {activePlayer.hand.map((cardInst: CardInstance) => {
-            const isDiscarded = currentSelectedDiscards.includes(cardInst.instanceId);
+        <CardArtSeat playerId={activePlayer.id}>
+          <div className="flex flex-wrap justify-center gap-4 mb-4 min-h-[260px] items-center">
+            {activePlayer.hand.map((cardInst: CardInstance) => {
+              const isDiscarded = currentSelectedDiscards.includes(cardInst.instanceId);
 
-            return (
-              <div key={cardInst.instanceId} className="relative">
-                <CardView
-                  card={cardInst.card}
-                  instance={cardInst}
-                  size="md"
-                  isMulliganSelected={!isCurrentHeroCompleted && isDiscarded}
-                  isKeepSelected={!isCurrentHeroCompleted && !isDiscarded}
-                  onClick={() => toggleDiscard(cardInst.instanceId)}
-                />
-                {!isCurrentHeroCompleted && isDiscarded && (
-                  <div
-                    className={`absolute top-2 right-2 bg-rose-600 text-white text-micro px-2 py-0.5 pointer-events-none uppercase font-bold z-content ${style.badge}`}
-                  >
-                    DISCARD
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+              return (
+                <div key={cardInst.instanceId} className="relative">
+                  <CardView
+                    card={cardInst.card}
+                    instance={cardInst}
+                    size="md"
+                    isMulliganSelected={!isCurrentHeroCompleted && isDiscarded}
+                    isKeepSelected={!isCurrentHeroCompleted && !isDiscarded}
+                    onClick={() => toggleDiscard(cardInst.instanceId)}
+                  />
+                  {!isCurrentHeroCompleted && isDiscarded && (
+                    <div
+                      className={`absolute top-2 right-2 bg-rose-600 text-white text-micro px-2 py-0.5 pointer-events-none uppercase font-bold z-content ${style.badge}`}
+                    >
+                      DISCARD
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </CardArtSeat>
 
         {/* Individual Hero Confirm Button (if not completed) */}
         {!isCurrentHeroCompleted && (

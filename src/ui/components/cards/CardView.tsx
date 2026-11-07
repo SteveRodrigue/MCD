@@ -88,13 +88,17 @@ const CardViewImpl: React.FC<CardViewProps> = ({
 
   const { style } = useModalStyle();
   const [failedArtPackUrl, setFailedArtPackUrl] = useState<string | null>(null);
-  const heroCode = useCardArtHero(instance?.ownerId);
+  const seatOrOwnerHero = useCardArtHero(instance?.ownerId);
+  const resolvedBackType = cardBackType || getCardBackTypeForCard(card);
+  const heroCode =
+    instance?.ownerId || (resolvedBackType === 'player' && !instance?.isShell)
+      ? seatOrOwnerHero
+      : undefined;
   const art = officialArtOnly ? undefined : artPackArt({ code: card.code, artStats, heroCode });
   const usesArtPack = art !== undefined && art.url !== failedArtPackUrl;
 
   // A shell's only face is its own card, so its art may show. Any other facedown card hides itself.
   const isFacedown = Boolean(isFacedownProp) && !(instance?.isShell && usesArtPack);
-  const resolvedBackType = cardBackType || getCardBackTypeForCard(card);
   const [cardBackError, setCardBackError] = useState(false);
 
   const { artUrl, loading, error } = useCardArt(card, {

@@ -6,6 +6,7 @@ import { CardContextMenu } from '../../src/ui/components/cards/CardContextMenu';
 import { CardView } from '../../src/ui/components/cards/CardView';
 import { ArtPackSettings } from '../../src/ui/components/setup/ArtPackSettings';
 import { ContentScreen } from '../../src/ui/components/setup/ContentScreen';
+import { MulliganScreen } from '../../src/ui/components/setup/MulliganScreen';
 import { CardArtHeroes, CardArtSeat } from '../../src/ui/context/CardArtHeroContext';
 import { GameSettingsProvider } from '../../src/ui/context/GameSettingsProvider';
 import { cardCatalog } from '../../src/data/importer/card-loader';
@@ -493,7 +494,7 @@ describe('S8: a pack tied to a hero shows only on that hero', () => {
     await waitFor(() => expect(images()).toEqual([packArt('op_iron_man'), packArt('op_she_hulk')]));
   });
 
-  it('S8: a card owned by another seat shows its owner�s pack, wherever it sits', async () => {
+  it("S8: a card owned by another seat shows its owner's pack, wherever it sits", async () => {
     render(
       <CardArtHeroes players={seats}>
         <CardArtSeat playerId="p1">
@@ -527,7 +528,7 @@ describe('S8: a pack tied to a hero shows only on that hero', () => {
     await waitFor(() => expect(images()).toEqual([packArt('op_she_hulk')]));
   });
 
-  it('S8: a thumbnail and the card menu follow the seat�s hero pack', async () => {
+  it("S8: a thumbnail and the card menu follow the seat's hero pack", async () => {
     render(
       <GameSettingsProvider>
         <CardArtSeat heroCode={IRON_MAN}>
@@ -545,6 +546,125 @@ describe('S8: a pack tied to a hero shows only on that hero', () => {
       expect(screen.getByAltText('Shared').getAttribute('src')).toBe(packArt('op_iron_man')),
     );
     expect(screen.getByTestId('art-pack-credit').textContent).toBe('Art by A. Artist (unofficial)');
+  });
+
+  it("S8: in a 4-player mulligan, switching seat tabs shows each hero's own resource art pack and never Black Panther's when unseated", async () => {
+    const SPIDER_MAN = '01001a';
+    const CAPTAIN_MARVEL = '01010a';
+    const BLACK_PANTHER = '01040a';
+    const STRENGTH = '01090';
+    setLoadedContent({
+      ...loaded,
+      artPacks: [
+        heroPack('op_resources_blackpanther', BLACK_PANTHER),
+        heroPack('op_resources_captainmarvel', CAPTAIN_MARVEL),
+        heroPack('op_resources_ironman', IRON_MAN),
+        heroPack('op_resources_shehulk', SHE_HULK),
+        heroPack('op_resources_spiderman', SPIDER_MAN),
+      ].map((pack) => ({
+        ...pack,
+        cards: { [STRENGTH]: [{ file: '01090.png' }] },
+      })),
+    });
+
+    const strengthCard = cardCatalog.getCard(STRENGTH)!;
+    const heroSpecs = [
+      {
+        id: 'player_1',
+        heroCode: SPIDER_MAN,
+        alterEgoCode: '01001b',
+        pack: 'op_resources_spiderman',
+      },
+      {
+        id: 'player_2',
+        heroCode: CAPTAIN_MARVEL,
+        alterEgoCode: '01010b',
+        pack: 'op_resources_captainmarvel',
+      },
+      { id: 'player_3', heroCode: SHE_HULK, alterEgoCode: '01019b', pack: 'op_resources_shehulk' },
+      { id: 'player_4', heroCode: IRON_MAN, alterEgoCode: '01029b', pack: 'op_resources_ironman' },
+    ];
+    const state = setupGame({
+      catalog: cardCatalog,
+      scenarioId: 'rhino',
+      difficulty: 'STANDARD',
+      seed: 'mulligan-4p-art-packs',
+      skipMulligan: false,
+      players: heroSpecs.map((spec, idx) => ({
+        id: spec.id,
+        name: `Seat ${idx + 1}`,
+        hero: cardCatalog.getCard(spec.heroCode) as HeroCard,
+        alterEgo: cardCatalog.getCard(spec.alterEgoCode) as AlterEgoCard,
+        deckCards: Array(15).fill(strengthCard),
+      })),
+    });
+    for (const player of state.players) {
+      player.hand = [createCardInstance(strengthCard, player.id)];
+    }
+
+    render(
+      <GameSettingsProvider>
+        <CardArtHeroes players={state.players}>
+          <MulliganScreen
+            gameState={state}
+            onResolveHeroMulligan={() => {}}
+            onStartScenario={() => {}}
+            onResolvePrompt={() => {}}
+          />
+        </CardArtHeroes>
+      </GameSettingsProvider>,
+    );
+
+    for (let idx = 0; idx < heroSpecs.length; idx++) {
+      if (idx > 0) {
+        fireEvent.click(screen.getByRole('button', { name: new RegExp(`Seat ${idx + 1}:`) }));
+      }
+      await waitFor(() =>
+        expect(screen.getByAltText(strengthCard.name).getAttribute('src')).toBe(
+          `/card-art/_art-${heroSpecs[idx].pack}/01090.png`,
+        ),
+      );
+    }
+  });
+
+  it("S8: an engaged minion in a hero's zone does not use the seat hero's art pack", async () => {
+    const SPIDER_MAN = '01001a';
+    const MINION_CODE = '01143';
+    const minionCard = cardCatalog.getCard(MINION_CODE)!;
+    setLoadedContent({
+      ...loaded,
+      artPacks: [
+        {
+          ...heroPack('op_spiderman', SPIDER_MAN),
+          cards: { [MINION_CODE]: [{ file: 'minion.png' }] },
+        },
+      ],
+    });
+    const state = game();
+    state.players[0].engagedMinions = [createCardInstance(minionCard)];
+
+    render(
+      <GameSettingsProvider>
+        <TestSession state={state}>
+          <CardArtHeroes players={state.players}>
+            <CardArtSeat playerId={state.players[0].id}>
+              <HeroZone
+                player={state.players[0]}
+                seatNumber={1}
+                isFocused={true}
+                isMultiHero={false}
+              />
+            </CardArtSeat>
+          </CardArtHeroes>
+        </TestSession>
+      </GameSettingsProvider>,
+    );
+
+    await waitFor(() =>
+      expect(screen.getByAltText(minionCard.name).getAttribute('src')).toBe(
+        `/card-art/core/${MINION_CODE}.png`,
+      ),
+    );
   });
 });
 

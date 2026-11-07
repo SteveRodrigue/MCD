@@ -402,7 +402,7 @@ describe('packs tied to a hero', () => {
   const IRON_MAN = '01029a';
   const SHE_HULK = '01019a';
   const BLACK_PANTHER = '01040a';
-  const SHURI = '45001a';
+  const SHURI = '51001a';
   const SHARED_CARD = '01002';
   const heroPack = (id: string, heroes: string[], cards: ArtPackManifest['cards']) => ({
     ...manifest(id, cards),

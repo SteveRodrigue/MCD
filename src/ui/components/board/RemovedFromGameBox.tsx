@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Archive, Skull } from 'lucide-react';
 import { CardInstance, NormalizedCard, PlayerState } from '../../../engine/models';
 import { CardView } from '../cards/CardView';
+import { CardArtSeat } from '../../context/CardArtHeroContext';
 import { useModalStyle } from '../../theme/useModalStyle';
 import { ZonePanel } from '../../theme/kit/surfaces';
 import { PileCardTile, PileChoice, PileGrid, PileGroup, PileViewerModal } from './PileViewerModal';
@@ -116,7 +117,13 @@ export const RemovedFromGameBox: React.FC<RemovedFromGameBoxProps> = ({
               className="relative cursor-pointer group"
               title={`Inspect Removed from Game Pile (${cards.length} Cards)`}
             >
-              <CardView card={topCard.card} size="sm" showTokens={false} enableHoverZoom={true} />
+              <CardView
+                card={topCard.card}
+                instance={topCard}
+                size="sm"
+                showTokens={false}
+                enableHoverZoom={true}
+              />
               <span
                 className={`absolute -top-2 left-1/2 -translate-x-1/2 bg-comic-red text-white text-nano px-1 py-0.5 uppercase font-bold pointer-events-none ${style.badge}`}
               >
@@ -145,49 +152,61 @@ export const RemovedFromGameBox: React.FC<RemovedFromGameBoxProps> = ({
             const topDeckCard = player.deck[0];
 
             return (
-              <div
-                key={player.id}
-                data-testid={`defeated-hero-stack-${player.id}`}
-                onClick={() => inspect(player.id)}
-                className="relative cursor-pointer group shrink-0"
-                title={`Inspect Defeated Hero: ${player.name} (${player.deck.length} Cards in Deck)`}
-              >
-                {/* The whole stack (hero and deck peek) greys out until hovered */}
+              <CardArtSeat key={player.id} playerId={player.id}>
                 <div
-                  data-testid={`defeated-hero-visual-${player.id}`}
-                  className="relative grayscale contrast-125 opacity-80 group-hover:opacity-100 group-hover:grayscale-0 transition-all duration-200"
+                  data-testid={`defeated-hero-stack-${player.id}`}
+                  onClick={() => inspect(player.id)}
+                  className="relative cursor-pointer group shrink-0"
+                  title={`Inspect Defeated Hero: ${player.name} (${player.deck.length} Cards in Deck)`}
                 >
-                  {/* Deck Card Peek Underneath (facedown, subtle peek offset, no fanning) */}
-                  {topDeckCard && (
-                    <div
-                      data-testid={`defeated-hero-deck-peek-${player.id}`}
-                      className="absolute -top-1 -left-1 w-full h-full pointer-events-none"
-                    >
-                      <CardView card={topDeckCard.card} size="sm" isFacedown showTokens={false} />
+                  {/* The whole stack (hero and deck peek) greys out until hovered */}
+                  <div
+                    data-testid={`defeated-hero-visual-${player.id}`}
+                    className="relative grayscale contrast-125 opacity-80 group-hover:opacity-100 group-hover:grayscale-0 transition-all duration-200"
+                  >
+                    {/* Deck Card Peek Underneath (facedown, subtle peek offset, no fanning) */}
+                    {topDeckCard && (
+                      <div
+                        data-testid={`defeated-hero-deck-peek-${player.id}`}
+                        className="absolute -top-1 -left-1 w-full h-full pointer-events-none"
+                      >
+                        <CardView
+                          card={topDeckCard.card}
+                          instance={topDeckCard}
+                          size="sm"
+                          isFacedown
+                          showTokens={false}
+                        />
+                      </div>
+                    )}
+
+                    {/* Hero Card on Top (a later positioned sibling paints over the peek) */}
+                    <div data-testid={`defeated-hero-card-${player.id}`} className="relative">
+                      <CardView
+                        card={heroCard}
+                        size="sm"
+                        showTokens={false}
+                        enableHoverZoom={true}
+                      />
+
+                      {/* DEFEATED Ribbon Badge */}
+                      <span
+                        className={`absolute -top-2 left-1/2 -translate-x-1/2 bg-comic-red text-white text-nano px-1.5 py-0.5 uppercase font-bold pointer-events-none whitespace-nowrap ${style.badge}`}
+                      >
+                        DEFEATED
+                      </span>
+
+                      {/* Deck Count Badge */}
+                      <span
+                        className={`absolute -bottom-2 -right-2 text-xs px-1.5 py-0.5 ${style.chip}`}
+                        title={`${player.deck.length} cards in deck`}
+                      >
+                        {player.deck.length}
+                      </span>
                     </div>
-                  )}
-
-                  {/* Hero Card on Top (a later positioned sibling paints over the peek) */}
-                  <div data-testid={`defeated-hero-card-${player.id}`} className="relative">
-                    <CardView card={heroCard} size="sm" showTokens={false} enableHoverZoom={true} />
-
-                    {/* DEFEATED Ribbon Badge */}
-                    <span
-                      className={`absolute -top-2 left-1/2 -translate-x-1/2 bg-comic-red text-white text-nano px-1.5 py-0.5 uppercase font-bold pointer-events-none whitespace-nowrap ${style.badge}`}
-                    >
-                      DEFEATED
-                    </span>
-
-                    {/* Deck Count Badge */}
-                    <span
-                      className={`absolute -bottom-2 -right-2 text-xs px-1.5 py-0.5 ${style.chip}`}
-                      title={`${player.deck.length} cards in deck`}
-                    >
-                      {player.deck.length}
-                    </span>
                   </div>
                 </div>
-              </div>
+              </CardArtSeat>
             );
           })}
         </div>
@@ -240,36 +259,38 @@ export const RemovedFromGameBox: React.FC<RemovedFromGameBoxProps> = ({
           {/* Modal Body Content */}
           {selectedEliminatedPlayer ? (
             /* Defeated Hero: the whole play area that left the game */
-            <div className="space-y-4 py-2">
-              <div className="flex flex-wrap items-center gap-4">
-                <CardView
-                  card={selectedEliminatedPlayer.activeFormCard || selectedEliminatedPlayer.hero}
-                  size="sm"
-                  showTokens={false}
-                  enableHoverZoom={true}
-                />
-                <div className="space-y-2">
-                  <p className="text-sm uppercase">
-                    HP {selectedEliminatedPlayer.health} / {selectedEliminatedPlayer.maxHealth}
-                  </p>
-                  <ul
-                    data-testid="defeated-zone-counts"
-                    className="flex flex-wrap gap-2 text-xs font-semibold"
-                  >
-                    {selectedZones.map((zone) => (
-                      <li key={zone.key} className={`px-2 py-0.5 ${style.inset}`}>
-                        {zone.title}: {zone.cards.length}
-                      </li>
-                    ))}
-                  </ul>
+            <CardArtSeat playerId={selectedEliminatedPlayer.id}>
+              <div className="space-y-4 py-2">
+                <div className="flex flex-wrap items-center gap-4">
+                  <CardView
+                    card={selectedEliminatedPlayer.activeFormCard || selectedEliminatedPlayer.hero}
+                    size="sm"
+                    showTokens={false}
+                    enableHoverZoom={true}
+                  />
+                  <div className="space-y-2">
+                    <p className="text-sm uppercase">
+                      HP {selectedEliminatedPlayer.health} / {selectedEliminatedPlayer.maxHealth}
+                    </p>
+                    <ul
+                      data-testid="defeated-zone-counts"
+                      className="flex flex-wrap gap-2 text-xs font-semibold"
+                    >
+                      {selectedZones.map((zone) => (
+                        <li key={zone.key} className={`px-2 py-0.5 ${style.inset}`}>
+                          {zone.title}: {zone.cards.length}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
+                {selectedZones
+                  .filter((zone) => zone.cards.length > 0)
+                  .map((zone) => (
+                    <PileSection key={zone.key} zone={zone} />
+                  ))}
               </div>
-              {selectedZones
-                .filter((zone) => zone.cards.length > 0)
-                .map((zone) => (
-                  <PileSection key={zone.key} zone={zone} />
-                ))}
-            </div>
+            </CardArtSeat>
           ) : cards.length === 0 ? (
             <div className={`py-8 text-center font-comic ${style.muted}`}>
               No cards have been removed from the game.

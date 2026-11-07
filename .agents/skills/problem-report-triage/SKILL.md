@@ -54,7 +54,7 @@ flowchart TD
     S3 --> S3B{"3. Duplicate/Merge Detection<br/>(gh issue list --search)"}
     S3B -- "Duplicate Found" --> M1["3a. Comment on Existing Issue<br/>+ Apply 'duplicate' Label"]
     M1 --> S6["5. Delete Local Report File, Log [PRUNE]"]
-    S3B -- "No Match" --> S4["4. File New GitHub Issue (gh issue create --label <labels>)"]
+    S3B -- "No Match" --> S4["4. File New GitHub Issue (gh issue create --label <labels> --milestone <gate>)"]
     S4 --> S5["4a. Verify Issue Created, Log [FILE]"]
     S5 --> S6
     S6 --> S2
@@ -127,7 +127,7 @@ When a duplicate is detected, do **not** create a new issue. Instead:
 gh issue edit <NUM> --add-label "duplicate"
 ```
 
-3. **If the new report's priority is higher** than the existing issue's current `priority:P?-*` label, swap the priority label up (e.g. remove `priority:P2-medium`, add `priority:P1-high`) so the escalated severity is visible without manual triage.
+3. **If the new report's priority is higher** than the existing issue's current `priority:P?-*` label, swap the priority label up (e.g. remove `priority:P2-medium`, add `priority:P1-high`) so the escalated severity is visible without manual triage. If the existing issue has no milestone, assign one using the Gate mapping in Step 4 (`gh issue edit <NUM> --milestone "<gate>"`).
 4. Log `[MERGE]` with the issue number and running report count, then proceed to Step 5.
 
 ### Step 4: File a New GitHub Issue (No Duplicate Found)
@@ -149,10 +149,24 @@ Priority mapping (`report.priority` → repo label — note `P0` renames from `c
 | `P2-medium`       | `priority:P2-medium`  |
 | `P3-low`          | `priority:P3-low`     |
 
+**Assign a Gate milestone (`--milestone`):** Every open issue must belong to an open milestone ([`roadmap_and_milestones.md`](../../../docs/roadmap_and_milestones.md); enforced by `npm run docs:check -- --github`). Verify active milestone titles via `gh api 'repos/{owner}/{repo}/milestones?state=open' --jq '.[].title'`. In case of uncertainty, map the issue to the Gate that contains the affected card pack / scenario:
+
+| Affected Card Pack / Scope                                                                                     | Milestone (`--milestone`)                  |
+| -------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| Core heroes, Core player cards, Rhino, Bomb Scare, Standard, Expert, or general core engine/UI gameplay        | `Gate 1 — Rhino Release`                   |
+| Klaw, Ultron, or remaining Core modular sets (Masters of Evil, Under Attack, Legions of Hydra, Doomsday Chair) | `Gate 2 — Klaw & Ultron`                   |
+| Green Goblin scenario pack (MC02: Risky Business, Mutagen Formula, modular sets)                               | `Gate 3 — Green Goblin (MC02)`             |
+| Wrecking Crew scenario pack (MC03)                                                                             | `Gate 4 — Wrecking Crew (MC03)`            |
+| Later expansions (`04...`+) or advanced expansion mechanics                                                    | `Gate 5 — Expansions & Advanced Mechanics` |
+| Pure theme/font/frame styling (`UI theming`), dev tooling (`Tech Debt & Tooling`), or multiplayer co-op        | Matching parallel milestone                |
+
+If the mapped Gate milestone is already closed, assign the currently active open `Gate N` milestone (lowest `N` with open issues).
+
 ```bash
 gh issue create \
   --title "[BUG]: <report.title, tag normalized>" \
   --label "bug,priority:P1-high,needs-review" \
+  --milestone "<gate>" \
   --body-file <temp-body-file>.md
 ```
 

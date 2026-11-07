@@ -162,6 +162,8 @@ export interface EffectExecutionContext {
   defenderType?: 'HERO' | 'ALLY' | 'UNDEFENDED';
   /** Final damage of the activation, set while a deferred boost ability resolves (IF_ACTIVATION_DEALT_DAMAGE). */
   activationDamage?: number;
+  /** The activation defeated a character, set with `activationDamage` (IF_ACTIVATION_DEFEATED_CHARACTER). */
+  activationDefeatedCharacter?: boolean;
   /** The hero or ally that took that damage, resolved by the DAMAGED_CHARACTER selector. */
   damagedCharacter?: DamagedCharacter;
   attackCancelled?: boolean;
@@ -1963,6 +1965,16 @@ function discardFromEncounterDeck(
         break;
       }
     }
+  }
+  // "Each time a card ... is discarded this way, deal that card" (RR v1.8 "Each Time"): each match
+  // leaves wherever the discard left it, even a deck reset by the discard's last card.
+  if (params.matchingDestination === 'DEAL_FACEDOWN' && params.filter) {
+    const matches = discardedCards.filter((c) =>
+      matchesCardFilter(c, params.filter, { player, state }),
+    );
+    state.encounterDiscard = state.encounterDiscard.filter((c) => !matches.includes(c));
+    state.encounterDeck = state.encounterDeck.filter((c) => !matches.includes(c));
+    player.dealtEncounterCards.push(...matches);
   }
   // "Put the first minion discarded this way into play": it leaves wherever the discard left it.
   const firstMatch =

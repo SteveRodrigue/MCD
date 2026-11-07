@@ -94,6 +94,11 @@ Example: _Melter_ `01132`.
 
 A `CONSTANT` step on a main scheme: no effect can remove threat from it, whatever the source (Countdown to Oblivion 3B). The block is read by `getMainSchemeThreatBlock`, the same check as Crisis and Patrol, so basic thwarts, abilities and distributed removal all respect it.
 
+### `CANNOT_HAVE_STATUS`
+
+- **References:** _Ronan the Accuser_ `90001`
+- **Description:** CONSTANT restriction on the card: it cannot be given this status card (`status`: `STUNNED` or `CONFUSED`). The Stalwart keyword covers both.
+
 ### `CANNOT_TAKE_DAMAGE`
 
 - **References:** [`damage-immunity.ts`](../../../src/engine/pipeline/damage-immunity.ts), [`damage-pipeline.ts`](../../../src/engine/pipeline/damage-pipeline.ts) (step 0), [`target-choice.ts`](../../../src/engine/effects/target-choice.ts), ADR-0078 addendum, #297

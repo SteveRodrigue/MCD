@@ -51,6 +51,12 @@ import {
 import { appendLog } from '../state/game-log';
 import { canDeclareDefender } from './legality-checker';
 
+/** Gates on how the activation ended: their boost abilities wait for the attack's damage (#221). */
+const ACTIVATION_OUTCOME_GATES: ReadonlySet<string> = new Set([
+  'IF_ACTIVATION_DEALT_DAMAGE',
+  'IF_ACTIVATION_DEFEATED_CHARACTER',
+]);
+
 export type DefensePolicy =
   'TAKE_UNDEFENDED' | 'HERO_IF_READY' | 'ALLY_CHUMP_BLOCK' | 'AUTO_OPTIMAL';
 
@@ -767,7 +773,7 @@ function attackBoostOptions(
     },
     onDeferred: (ability, boostCard) => {
       if (deferUntilAfterActivation(attackContext, ability, boostCard)) return true;
-      if (!ability.steps?.some((s) => s.gate === 'IF_ACTIVATION_DEALT_DAMAGE')) return false;
+      if (!ability.steps?.some((s) => s.gate && ACTIVATION_OUTCOME_GATES.has(s.gate))) return false;
       const deferred = (attackContext.deferredBoostAbilities ??= []);
       if (!deferred.some((d) => d.ability === ability && d.sourceCardInstance === boostCard)) {
         deferred.push({ ability, sourceCardInstance: boostCard });
@@ -1128,7 +1134,13 @@ export function applyCalculatedAttackDamage(
   }
 
   if (damage?.paused) return;
-  completeAttackDamage(state, player, attackContext, damage?.result.damageTaken ?? rawDamage);
+  completeAttackDamage(
+    state,
+    player,
+    attackContext,
+    damage?.result.damageTaken ?? rawDamage,
+    damage?.result.targetDefeated ?? false,
+  );
 }
 
 /**
@@ -1141,11 +1153,13 @@ function completeAttackDamage(
   player: PlayerState,
   attackContext: AttackExecutionContext,
   damageTaken: number,
+  characterDefeated: boolean,
 ): void {
   const enemy =
     attackContext.attackerType === 'VILLAIN' ? attackingVillain(state, attackContext) : undefined;
   const attackerName = enemy ? enemy.card.name : attackContext.attackerCard?.card.name || 'Minion';
   attackContext.finalDamage = damageTaken;
+  attackContext.defeatedCharacter = characterDefeated;
 
   const attackerCode = enemy ? enemy.card.code : attackContext.attackerCard?.card.code;
 
@@ -1206,6 +1220,7 @@ function resolveDeferredBoostAbilities(
       attackerType: attackContext.attackerType,
       defenderType: attackContext.defender?.type ?? 'UNDEFENDED',
       activationDamage: attackContext.finalDamage ?? 0,
+      activationDefeatedCharacter: attackContext.defeatedCharacter ?? false,
       damagedCharacter: attackContext.damagedCharacter,
     });
 
@@ -1254,7 +1269,13 @@ export function finishAttackDamageAndPostResolution(
     logPlayerHit: hooks.logPlayerHit,
     onPrevented: hooks.wouldTakeWindow.onPrevented,
   });
-  completeAttackDamage(resumed.state, player, attackContext, resumed.result.damageTaken);
+  completeAttackDamage(
+    resumed.state,
+    player,
+    attackContext,
+    resumed.result.damageTaken,
+    resumed.result.targetDefeated,
+  );
   if (resumed.state.winner) return resumed.state;
   state = step7_resolvePostAttackAndRetaliate(resumed.state, attackContext);
   recordOutcomeOnStepEvent(state, player, attackContext);

@@ -1,0 +1,207 @@
+{
+  "$schema": "../../../../src/data/supplemental/schema.json",
+  "cards": {
+    "90001": {
+      "abilities": [
+        {
+          "id": "ronan_cannot_be_stunned",
+          "timing": "CONSTANT",
+          "steps": [{ "effect": "CANNOT_HAVE_STATUS", "effectParams": { "status": "STUNNED" } }]
+        },
+        {
+          "id": "ronan_engage_fewest",
+          "timing": "FORCED_INTERRUPT",
+          "trigger": "VILLAIN_PHASE_BEGAN",
+          "steps": [
+            {
+              "effect": "ENGAGE_MINION",
+              "effectParams": { "target": "SELF", "engagePlayer": "HERO_WITH_FEWEST_HIT_POINTS" }
+            }
+          ]
+        },
+        {
+          "id": "ronan_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "steps": [
+            {
+              "effect": "PUT_INTO_PLAY",
+              "effectParams": { "target": "SELF", "to": "ENGAGED_WITH_PLAYER" }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-06T23:30:00Z",
+        "updatedAt": "2026-11-06T23:30:00Z",
+        "reviewedAt": "2026-11-06T23:30:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 98,
+        "originalText": "Toughness.\nRonan the Accuser cannot be stunned.\n<b>Forced Interrupt</b>: When the villain phase begins, Ronan the Accuser engages the hero with the fewest remaining hit points.\n<hr />\n[star] <b>Boost</b>: Put Ronan the Accuser into play engaged with you."
+      }
+    },
+    "90002": {
+      "abilities": [
+        {
+          "id": "judge_jury_defeat",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "CHARACTER_DEFEATED",
+          "triggerFilter": { "targetType": "CHARACTER", "defeatedByAttackOf": "ANY_ENEMY" },
+          "steps": [
+            { "effect": "ADD_THREAT", "effectParams": { "target": "MAIN_SCHEME", "amount": 2 } }
+          ]
+        },
+        {
+          "id": "judge_jury_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "steps": [
+            {
+              "effect": "PUT_INTO_PLAY",
+              "effectParams": { "target": "SELF", "to": "SIDE_SCHEMES" }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-06T23:30:00Z",
+        "updatedAt": "2026-11-06T23:30:00Z",
+        "reviewedAt": "2026-11-06T23:30:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 98,
+        "originalText": "<b>Forced Response</b>: After a friendly character is defeated by an enemy attack, place 2 threat on the main scheme.\n<hr />\n[star] <b>Boost</b>: Put Judge, Jury, Executioner into play."
+      }
+    },
+    "90003": {
+      "attachTo": { "host": { "type": "IDENTITY" } },
+      "abilities": [
+        {
+          "id": "accused_atk",
+          "timing": "FORCED_INTERRUPT",
+          "trigger": "INITIATES_ATTACK",
+          "triggerFilter": { "attackerKind": "ANY_ENEMY", "targetPlayerScope": "SELF" },
+          "steps": [
+            {
+              "effect": "MODIFY_STAT",
+              "effectParams": {
+                "stat": "ATTACK",
+                "target": "TRIGGERING_ENEMY",
+                "duration": "ATTACK",
+                "amount": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "accused_discard",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "CHARACTER_DEFEATED",
+          "triggerFilter": {
+            "cardFilter": { "names": ["Ronan the Accuser"] },
+            "targetPlayerScope": "ANY"
+          },
+          "steps": [{ "effect": "DISCARD", "effectParams": { "source": "SELF" } }]
+        },
+        {
+          "id": "accused_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "steps": [
+            { "effect": "PUT_INTO_PLAY", "effectParams": { "target": "SELF", "to": "ATTACHED" } }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-06T23:30:00Z",
+        "updatedAt": "2026-11-06T23:30:00Z",
+        "reviewedAt": "2026-11-06T23:30:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 98,
+        "originalText": "Attach to your identity.\n<b>Forced Interrupt</b>: When an enemy initiates an attack against the attached identity, that enemy gets +1 ATK for the attack.\n<b>Forced Response</b>: After Ronan the Accuser is defeated, discard this card.\n<hr />\n[star] <b>Boost</b>: Attach to your identity."
+      }
+    },
+    "90004": {
+      "abilities": [
+        {
+          "id": "hammer_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "id": "hammer_activate",
+              "effect": "ACTIVATE_MINIONS",
+              "effectParams": {
+                "filter": { "names": ["Ronan the Accuser"] },
+                "against": "ENGAGED_PLAYER"
+              }
+            },
+            {
+              "effect": "SURGE",
+              "gate": "THEN",
+              "gateParams": { "step": "hammer_activate", "negate": true }
+            }
+          ]
+        },
+        {
+          "id": "hammer_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "steps": [
+            {
+              "gate": "IF_ACTIVATION_DEFEATED_CHARACTER",
+              "effect": "DEAL_FACEDOWN_ENCOUNTER_CARD",
+              "effectParams": { "target": "FIRST_PLAYER", "count": 1 }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-06T23:30:00Z",
+        "updatedAt": "2026-11-06T23:30:00Z",
+        "reviewedAt": "2026-11-06T23:30:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 98,
+        "originalText": "<b>When Revealed</b>: Ronan the Accuser activates against the player he is engaged with. If Ronan the Accuser is not in play, this card gains surge.\n<hr />\n[star] <b>Boost</b>: If this activation defeats a character, deal the first player 1 facedown encounter card."
+      }
+    },
+    "90005": {
+      "abilities": [
+        {
+          "id": "you_dare_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "ENCOUNTER_DECK",
+                "count": 5,
+                "filter": { "sets": ["kree_fanatic"] },
+                "matchingDestination": "DEAL_FACEDOWN"
+              }
+            }
+          ]
+        },
+        {
+          "id": "you_dare_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "steps": [{ "effect": "GRANT_ATTACK_KEYWORD", "effectParams": { "keyword": "Overkill" } }]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-11-06T23:30:00Z",
+        "updatedAt": "2026-11-06T23:30:00Z",
+        "reviewedAt": "2026-11-06T23:30:00Z",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 98,
+        "originalText": "<b>When Revealed</b>: Discard the top 5 cards of the encounter deck. Each time a card belonging to the Kree Fanatic set is discarded this way, deal that card to yourself as a facedown encounter card.\n<hr />\n[star] <b>Boost</b>: If this activation is an attack, that attack gains overkill."
+      }
+    }
+  }
+}

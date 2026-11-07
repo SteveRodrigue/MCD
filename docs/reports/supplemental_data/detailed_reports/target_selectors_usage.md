@@ -54,7 +54,7 @@
 | `24029` | **Cruel Intentions (treachery)** | `hood_encounter` | `cruel_intentions_when_revealed` |
 | `24049a` | **Formidable Foe (environment)** | `hood_encounter` | `formidable_foe_steady` |
 
-### <a id="self"></a>`SELF` (21 Cards, 25 Declarations)
+### <a id="self"></a>`SELF` (24 Cards, 29 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -79,6 +79,9 @@
 | `02006b` | **State of Madness (environment)** | `gob_encounter` | `state_of_madness_when_revealed`, `state_of_madness_action` |
 | `03024` | **Avengers Tower (support)** | `cap` | `avengers_tower_ally_limit` |
 | `21054` | **Eternity (event)** | `mts` | `eternity_when_revealed` |
+| `90001` | **Ronan the Accuser (minion)** | `ron_encounter` | `ronan_engage_fewest`, `ronan_boost` |
+| `90002` | **Judge, Jury, Executioner (side_scheme)** | `ron_encounter` | `judge_jury_boost` |
+| `90003` | **The Accused (attachment)** | `ron_encounter` | `accused_boost` |
 
 ### <a id="all-players"></a>`ALL_PLAYERS` (17 Cards, 17 Declarations)
 
@@ -181,6 +184,16 @@
 | `02010` | **Oscorp Manufacturing (side_scheme)** | `gob_encounter` | `oscorp_manufacturing_when_revealed` |
 | `02037` | **A Mess of Things (side_scheme)** | `gob_encounter` | `a_mess_of_things_when_revealed` |
 
+### <a id="first-player"></a>`FIRST_PLAYER` (5 Cards, 5 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01116b` | **Underground Distribution (main_scheme)** | `core_encounter` | `klaw_underground_distribution_when_revealed` |
+| `01117a` | **Secret Rendezvous (main_scheme)** | `core_encounter` | `klaw_secret_rendezvous_when_revealed` |
+| `01128` | **The Masters of Evil (side_scheme)** | `core_encounter` | `masters_of_evil_when_revealed` |
+| `01150` | **Ultron's Imperative (side_scheme)** | `core_encounter` | `ultrons_imperative_when_revealed` |
+| `90004` | **Bring the Hammer Down (treachery)** | `ron_encounter` | `hammer_boost` |
+
 ### <a id="host"></a>`HOST` (5 Cards, 5 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -190,6 +203,15 @@
 | `01185` | **Biomechanical Upgrades (attachment)** | `core_encounter` | `biomechanical_upgrades_defeat_replacement` |
 | `02033` | **Goblin Glider (attachment)** | `gob_encounter` | `goblin_glider_atk_bonus` |
 | `45109` | **The Fittest (attachment)** | `aoa_encounter` | `the_fittest_tough` |
+
+### <a id="main-scheme"></a>`MAIN_SCHEME` (4 Cards, 5 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01122` | **Klaw's Vengeance (treachery)** | `core_encounter` | `klaws_vengeance_when_revealed` |
+| `01169` | **The Vulture's Plans (treachery)** | `core_encounter` | `the_vultures_plans_when_revealed` |
+| `01178` | **Kree Manipulator (treachery)** | `core_encounter` | `kree_manipulator_when_revealed`, `kree_manipulator_boost` |
+| `90002` | **Judge, Jury, Executioner (side_scheme)** | `ron_encounter` | `judge_jury_defeat` |
 
 ### <a id="all-heroes"></a>`ALL_HEROES` (4 Cards, 4 Declarations)
 
@@ -234,23 +256,6 @@
 | `02034` | **Pumpkin Bombs (attachment)** | `gob_encounter` | `pumpkin_bombs_damage_response` |
 | `02047` | **Tombstone (minion)** | `gob_encounter` | `tombstone_damage_response` |
 
-### <a id="first-player"></a>`FIRST_PLAYER` (4 Cards, 4 Declarations)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01116b` | **Underground Distribution (main_scheme)** | `core_encounter` | `klaw_underground_distribution_when_revealed` |
-| `01117a` | **Secret Rendezvous (main_scheme)** | `core_encounter` | `klaw_secret_rendezvous_when_revealed` |
-| `01128` | **The Masters of Evil (side_scheme)** | `core_encounter` | `masters_of_evil_when_revealed` |
-| `01150` | **Ultron's Imperative (side_scheme)** | `core_encounter` | `ultrons_imperative_when_revealed` |
-
-### <a id="main-scheme"></a>`MAIN_SCHEME` (3 Cards, 4 Declarations)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01122` | **Klaw's Vengeance (treachery)** | `core_encounter` | `klaws_vengeance_when_revealed` |
-| `01169` | **The Vulture's Plans (treachery)** | `core_encounter` | `the_vultures_plans_when_revealed` |
-| `01178` | **Kree Manipulator (treachery)** | `core_encounter` | `kree_manipulator_when_revealed`, `kree_manipulator_boost` |
-
 ### <a id="active-player"></a>`ACTIVE_PLAYER` (3 Cards, 3 Declarations)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
@@ -281,6 +286,14 @@
 | :--- | :--- | :--- | :--- |
 | `01129` | **Radioactive Man (minion)** | `core_encounter` | `radioactive_man_forced_response`, `radioactive_man_boost` |
 | `01173` | **Electric Whip Attack (treachery)** | `core_encounter` | `electric_whip_attack_boost` |
+
+### <a id="triggering-enemy"></a>`TRIGGERING_ENEMY` (3 Cards, 3 Declarations)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `01028` | **Superhuman Strength (upgrade)** | `core` | `superhuman_strength_stun` |
+| `01077` | **Counter-Punch (event)** | `core` | `counter_punch_response` |
+| `90003` | **The Accused (attachment)** | `ron_encounter` | `accused_atk` |
 
 ### <a id="all-schemes"></a>`ALL_SCHEMES` (2 Cards, 2 Declarations)
 
@@ -323,13 +336,6 @@
 | :--- | :--- | :--- | :--- |
 | `01133` | **Masters of Mayhem (treachery)** | `core_encounter` | `masters_of_mayhem_when_revealed` |
 | `01147` | **Swarm Attack (treachery)** | `core_encounter` | `swarm_attack_when_revealed` |
-
-### <a id="triggering-enemy"></a>`TRIGGERING_ENEMY` (2 Cards, 2 Declarations)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01028` | **Superhuman Strength (upgrade)** | `core` | `superhuman_strength_stun` |
-| `01077` | **Counter-Punch (event)** | `core` | `counter_punch_response` |
 
 ### <a id="all-characters"></a>`ALL_CHARACTERS` (1 Cards, 1 Declarations)
 

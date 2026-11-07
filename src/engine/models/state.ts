@@ -356,6 +356,8 @@ export interface AttackExecutionContext {
   afterActivationAbilities?: DeferredBoostAbility[];
   /** Who took the activation's damage, recorded in step 6 for DAMAGED_CHARACTER. */
   damagedCharacter?: DamagedCharacter;
+  /** The damage of step 6 defeated the character that took it. */
+  defeatedCharacter?: boolean;
   cancelled?: boolean;
   isCancelled?: boolean;
   cancellationReason?: string;

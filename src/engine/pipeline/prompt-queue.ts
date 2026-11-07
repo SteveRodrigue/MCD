@@ -1,4 +1,5 @@
 import { bindKernel, kernel } from '../kernel';
+import { findInPlayCardInstance } from '../state/state-validator';
 import {
   GameState,
   PendingDecisionPrompt,
@@ -895,7 +896,9 @@ export function resolveDecisionPrompt(
       player?.allies.find((c) => c.instanceId === prompt.sourceCardInstanceId) ||
       player?.tableau.find((c) => c.instanceId === prompt.sourceCardInstanceId) ||
       player?.attachments?.find((c) => c.instanceId === prompt.sourceCardInstanceId) ||
-      player?.hand.find((c) => c.instanceId === prompt.sourceCardInstanceId)
+      player?.hand.find((c) => c.instanceId === prompt.sourceCardInstanceId) ||
+      // An encounter card the prompted player does not hold (a minion engaged with another player).
+      findInPlayCardInstance(nextState, prompt.sourceCardInstanceId)
     : prompt.sourceCardCode
       ? player?.allies.find((c) => c.card.code === prompt.sourceCardCode) ||
         player?.tableau.find((c) => c.card.code === prompt.sourceCardCode)

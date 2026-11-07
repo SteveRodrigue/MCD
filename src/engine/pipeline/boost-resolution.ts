@@ -1,3 +1,4 @@
+import { findInPlayCardInstance } from '../state/state-validator';
 import { kernel } from '../kernel';
 import {
   CardAbility,
@@ -159,12 +160,12 @@ function finishBoostCard(
     onomatopoeia: 'BOOST REVEALED!',
   });
 
-  // Discard unless its own Boost put it into play engaged with the player the activation is against
-  // (e.g. Weapons Runner).
-  const targetPlayer = state.players.find((p) => p.id === playerId);
-  if (!targetPlayer?.engagedMinions.some((m) => m.instanceId === boostCard.instanceId)) {
-    state.encounterDiscard.push(boostCard);
-  }
+  // Discard unless its own Boost moved it: into play (Weapons Runner, a side scheme, an attachment)
+  // or to the discard pile already (an attachment with no host).
+  const isPlaced =
+    findInPlayCardInstance(state, boostCard.instanceId) !== undefined ||
+    state.encounterDiscard.includes(boostCard);
+  if (!isPlaced) state.encounterDiscard.push(boostCard);
   state.activeBoostCard = undefined;
   return icons;
 }

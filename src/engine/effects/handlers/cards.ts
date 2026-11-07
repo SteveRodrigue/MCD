@@ -16,7 +16,7 @@ import {
   getActiveMainScheme,
 } from '@engine/models';
 import { matchesCardFilter } from '../../filters/card-filter';
-import { resolveQuickstrike } from '../../pipeline/villain-phase';
+import { resolveQuickstrike, resolveRevealedAttachment } from '../../pipeline/villain-phase';
 import type { SearchZone } from '../../../data/supplemental/schema';
 import { drawPlayerCard } from '../../pipeline/deck-exhaustion';
 import { dealSurgeCard } from '../../pipeline/surge';
@@ -360,7 +360,10 @@ function handlePutIntoPlay(
     // Initialize counters for cards with 'uses' keyword (RR v1.8 p. 30)
     initializeCardUses(cardInst);
 
-    if (toZone === 'SIDE_SCHEMES' || cardInst.card.type === CardType.SIDE_SCHEME) {
+    if (toZone === 'ATTACHED') {
+      // Put into play, not revealed: the cancelled flag skips its When Revealed and Incite.
+      resolveRevealedAttachment(state, cardInst, player, true);
+    } else if (toZone === 'SIDE_SCHEMES' || cardInst.card.type === CardType.SIDE_SCHEME) {
       const sideCard = cardInst.card as SideSchemeCard;
       placeSideScheme(state, cardInst);
 

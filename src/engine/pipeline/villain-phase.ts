@@ -374,6 +374,24 @@ export function resolveQuickstrike(
 }
 
 /**
+ * A minion engages a player (RR v1.8 Engage): it leaves the player it was engaged with, and cannot
+ * engage the same player again. Quickstrike resolves when it does engage.
+ */
+export function engageMinion(
+  state: GameState,
+  minion: CardInstance,
+  player: PlayerState,
+  options?: CombatOptions,
+): GameState | undefined {
+  if (player.engagedMinions.some((m) => m.instanceId === minion.instanceId)) return undefined;
+  for (const other of state.players) {
+    other.engagedMinions = other.engagedMinions.filter((m) => m.instanceId !== minion.instanceId);
+  }
+  player.engagedMinions.push(minion);
+  return resolveQuickstrike(state, minion, player, options);
+}
+
+/**
  * Executes a single minion scheme against an alter-ego.
  */
 export function executeMinionSchemeAgainstPlayer(
@@ -795,7 +813,7 @@ export function completeEncounterAttachment(
  * candidate applies the `otherwise` branch, where "gains surge" discards the card and deals the
  * surge card.
  */
-function resolveRevealedAttachment(
+export function resolveRevealedAttachment(
   state: GameState,
   cardInstance: CardInstance,
   player: PlayerState,
@@ -997,6 +1015,13 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
   return updateGameState(state, (nextState) => advanceStepOnDraft(nextState, options));
 }
 
+/** "When the villain phase begins": each player's in-play cards get the window once. */
+export function dispatchVillainPhaseBegan(state: GameState): void {
+  for (const player of state.players) {
+    kernel.dispatchTrigger(state, 'VILLAIN_PHASE_BEGAN', { targetPlayerId: player.id });
+  }
+}
+
 function advanceStepOnDraft(nextState: GameState, options?: CombatOptions): GameState {
   if (!nextState.options) nextState.options = {};
   nextState.options.villainPhaseStepping = true;
@@ -1012,10 +1037,7 @@ function advanceStepOnDraft(nextState: GameState, options?: CombatOptions): Game
       onomatopoeia: 'VILLAIN PHASE!',
     });
 
-    // Dispatch Villain Phase Began triggers across all players
-    for (const player of nextState.players) {
-      kernel.dispatchTrigger(nextState, 'VILLAIN_PHASE_BEGAN', { targetPlayerId: player.id });
-    }
+    dispatchVillainPhaseBegan(nextState);
 
     // Step 1: Place threat on main scheme
     const threatBefore = getActiveMainScheme(nextState).threat;
@@ -1394,10 +1416,7 @@ function runVillainPhaseOnDraft(nextState: GameState, options?: CombatOptions): 
     onomatopoeia: 'VILLAIN PHASE!',
   });
 
-  // Dispatch Villain Phase Began triggers across all players
-  for (const player of nextState.players) {
-    kernel.dispatchTrigger(nextState, 'VILLAIN_PHASE_BEGAN', { targetPlayerId: player.id });
-  }
+  dispatchVillainPhaseBegan(nextState);
 
   step1_placeThreat(nextState);
   if (nextState.winner) return nextState;

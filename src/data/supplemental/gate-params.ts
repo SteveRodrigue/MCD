@@ -172,6 +172,12 @@ export const IfActivationDealtDamageGateParamsSchema = z
   })
   .strict();
 
+export const IfActivationDefeatedCharacterGateParamsSchema = z
+  .object({
+    negate: negateParam,
+  })
+  .strict();
+
 export type GateFieldType = 'string' | 'number' | 'boolean' | 'enum' | 'step' | 'card-filter';
 
 export interface GateFieldMeta {
@@ -220,5 +226,7 @@ export const GATE_REGISTRY: Record<StepGate, GateDefinition> = {
   IF_UNDEFENDED_ATTACK: defineGate('IF_UNDEFENDED_ATTACK', IfUndefendedAttackGateParamsSchema,
   ),
   IF_ACTIVATION_DEALT_DAMAGE: defineGate('IF_ACTIVATION_DEALT_DAMAGE', IfActivationDealtDamageGateParamsSchema,
+  ),
+  IF_ACTIVATION_DEFEATED_CHARACTER: defineGate('IF_ACTIVATION_DEFEATED_CHARACTER', IfActivationDefeatedCharacterGateParamsSchema,
   ),
 };

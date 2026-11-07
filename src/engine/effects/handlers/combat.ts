@@ -13,6 +13,7 @@ import {
   executeVillainSchemeAgainstPlayer,
   executeMinionAttackAgainstPlayer,
   executeMinionActivationAgainstPlayer,
+  engageMinion,
 } from '../../pipeline/villain-phase';
 import { drawEncounterCard } from '../../pipeline/deck-exhaustion';
 import { dealSurgeCard } from '../../pipeline/surge';
@@ -159,6 +160,83 @@ function handleVillainSchemes(
   };
 }
 
+const FEWEST_HIT_POINTS = 'HERO_WITH_FEWEST_HIT_POINTS';
+
+/**
+ * Tied heroes for "the hero with the fewest hit points": the first player selects among the
+ * eligible targets of an encounter card (RR v1.8 First Player). Opens a prompt that re-runs the step
+ * for the chosen hero, and returns true when it did. The re-run carries `tiedPlayerId`.
+ */
+function promptFewestHitPointsTie(
+  state: GameState,
+  step: { effect: string; effectParams?: unknown },
+  context: EffectExecutionContext,
+): boolean {
+  const params = (step.effectParams ?? {}) as Record<string, unknown>;
+  if (params.tiedPlayerId) return false;
+  const heroes = state.players.filter((p) => p.currentForm === 'hero');
+  const fewest = Math.min(...heroes.map((p) => p.health));
+  const tied = heroes.filter((p) => p.health === fewest);
+  if (tied.length < 2) return false;
+
+  const source = context.sourceCardInstance;
+  const firstPlayer = state.players[state.firstPlayerIndex] ?? state.players[0];
+  kernel.enqueueDecisionPrompt(state, {
+    promptId: `prompt_fewest_hit_points_${source?.instanceId ?? step.effect}`,
+    playerId: firstPlayer.id,
+    title: 'Choose a Hero',
+    description: `These heroes are tied for the fewest hit points. Choose one for ${source?.card.name ?? 'this effect'}:`,
+    sourceCardName: source?.card.name ?? 'Fewest Hit Points',
+    sourceCardCode: source?.card.code,
+    sourceCardInstanceId: source?.instanceId,
+    isVoluntary: false,
+    options: tied.map((p) => ({
+      id: `choose_player_${p.id}`,
+      label: `${p.name} (${p.hero?.name ?? 'Hero'})`,
+      cardCode: p.activeFormCard?.code ?? p.hero?.code,
+      cardName: p.hero?.name,
+      description: `Choose ${p.name}`,
+      effect: step.effect,
+      params: { ...params, tiedPlayerId: p.id },
+    })),
+  });
+  return true;
+}
+
+/** The hero a fewest-hit-points step resolves to: the one the first player chose, or the only one. */
+function fewestHitPointsHero(
+  state: GameState,
+  step: { effectParams?: unknown },
+  context: EffectExecutionContext,
+): PlayerState | undefined {
+  const tiedPlayerId = (step.effectParams as { tiedPlayerId?: string } | undefined)?.tiedPlayerId;
+  if (tiedPlayerId) return state.players.find((p) => p.id === tiedPlayerId);
+  return resolveTargets(state, FEWEST_HIT_POINTS, context).find((r) => r.kind === 'player')
+    ?.entity as PlayerState | undefined;
+}
+
+function handleEngageMinion(
+  state: GameState,
+  step: TypedStep<'ENGAGE_MINION'>,
+  context: EffectExecutionContext,
+  _player: PlayerState,
+): EffectResult {
+  const minion = context.sourceCardInstance;
+  const { engagePlayer } = getStepEffectParams(step);
+  if (engagePlayer === FEWEST_HIT_POINTS && promptFewestHitPointsTie(state, step, context)) {
+    return { state, success: true, mutatedState: false, onomatopoeia: 'CHOOSE PLAYER!' };
+  }
+  const target = fewestHitPointsHero(state, step, context);
+  const isEngagedWithTarget = target?.engagedMinions.some(
+    (m) => m.instanceId === minion?.instanceId,
+  );
+  if (!minion || !target || isEngagedWithTarget) {
+    return { state, success: true, mutatedState: false };
+  }
+  const updated = engageMinion(state, minion, target);
+  return { state: updated ?? state, success: true, mutatedState: true, onomatopoeia: 'ENGAGED!' };
+}
+
 function handleVillainAttacks(
   state: GameState,
   step: TypedStep<'VILLAIN_ATTACKS'>,
@@ -169,7 +247,12 @@ function handleVillainAttacks(
   const targetSelector = ((params as Record<string, unknown> | undefined)?.targetPlayer ??
     (params as Record<string, unknown> | undefined)?.target) as string | undefined;
   let targetPlayer: PlayerState | undefined = player;
-  if (targetSelector) {
+  if (targetSelector === FEWEST_HIT_POINTS) {
+    if (promptFewestHitPointsTie(state, step, context)) {
+      return { state, success: true, mutatedState: false, onomatopoeia: 'CHOOSE PLAYER!' };
+    }
+    targetPlayer = fewestHitPointsHero(state, step, context);
+  } else if (targetSelector) {
     const resolved = resolveTargets(state, targetSelector as TargetSelector, context);
     targetPlayer = resolved.find((r) => r.kind === 'player')?.entity as PlayerState | undefined;
   }
@@ -348,8 +431,8 @@ function handleEnemyAttacks(
 }
 
 /**
- * "Each nemesis minion activates against you" (RR v1.8 Activation): an attack for a hero, a scheme
- * for an alter-ego, whoever the minion is engaged with.
+ * "Each nemesis minion activates against you" or "against the player it is engaged with" (RR v1.8
+ * Activation): an attack for a hero, a scheme for an alter-ego.
  */
 function handleActivateMinions(
   state: GameState,
@@ -357,22 +440,25 @@ function handleActivateMinions(
   _context: EffectExecutionContext,
   player: PlayerState,
 ): EffectResult {
-  const { filter } = getStepEffectParams(step);
-  const minions = state.players
-    .flatMap((p) => p.engagedMinions)
-    .filter((m) => !filter || matchesCardFilter(m, filter, { player, state }));
+  const { filter, against } = getStepEffectParams(step);
+  const activations = state.players.flatMap((engaged) =>
+    engaged.engagedMinions
+      .filter((m) => !filter || matchesCardFilter(m, filter, { player, state }))
+      .map((minion) => ({ minion, target: against === 'ENGAGED_PLAYER' ? engaged : player })),
+  );
+  const minions = activations.map((a) => a.minion);
   if (minions.length === 0) return { state, success: true, mutatedState: false, value: 0 };
   let current = state;
-  for (const [index, minion] of minions.entries()) {
-    current = executeMinionActivationAgainstPlayer(current, minion, player);
+  for (const [index, { minion, target }] of activations.entries()) {
+    current = executeMinionActivationAgainstPlayer(current, minion, target);
     // An attack that stops at a decision holds the others; they resume when it ends.
     if (current.activeAttackContext || current.activeSchemeContext) {
       current.pendingActivations = [
         ...(current.pendingActivations ?? []),
-        ...minions.slice(index + 1).map((m) => ({
+        ...activations.slice(index + 1).map((a) => ({
           type: 'MINION' as const,
-          playerId: player.id,
-          minionInstanceId: m.instanceId,
+          playerId: a.target.id,
+          minionInstanceId: a.minion.instanceId,
         })),
       ];
       return {
@@ -428,6 +514,7 @@ function handleVillainAndEngagedMinionsAttack(
 
 export const COMBAT_HANDLERS = {
   ACTIVATE_MINIONS: handleActivateMinions,
+  ENGAGE_MINION: handleEngageMinion,
   GRANT_ATTACK_KEYWORD: handleGrantAttackKeyword,
   CANCEL_ATTACK: handleCancelAttack,
   GIVE_ADDITIONAL_BOOST_CARD: handleGiveAdditionalBoostCard,

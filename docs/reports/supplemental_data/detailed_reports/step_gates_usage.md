@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-## Step Gates (`StepGateSchema` — 11/11 In Use)
+## Step Gates (`StepGateSchema` — 12/12 In Use)
 
 ### <a id="if-counters"></a>`IF_COUNTERS` (16 Cards)
 
@@ -80,7 +80,7 @@
 | `02040` | **Tail Sweep (treachery)** | `gob_encounter` | `tail_sweep_when_revealed` |
 | `02043` | **Electromagnetic Pulse (treachery)** | `gob_encounter` | `electromagnetic_pulse_when_revealed` |
 
-### <a id="then"></a>`THEN` (8 Cards)
+### <a id="then"></a>`THEN` (9 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -92,6 +92,7 @@
 | `24053` | **Shadow of the Past (treachery)** | `hood_encounter` | `shadow_of_the_past_ii_when_revealed` |
 | `45075a` | **Pursued by the Past (environment)** | `aoa_encounter` | `pursued_by_the_past_threshold` |
 | `45078` | **Evil Alliance (treachery)** | `aoa_encounter` | `evil_alliance_when_revealed` |
+| `90004` | **Bring the Hammer Down (treachery)** | `ron_encounter` | `hammer_revealed` |
 
 ### <a id="if-activation-dealt-damage"></a>`IF_ACTIVATION_DEALT_DAMAGE` (5 Cards)
 
@@ -125,6 +126,12 @@
 | :--- | :--- | :--- | :--- |
 | `01173` | **Electric Whip Attack (treachery)** | `core_encounter` | `electric_whip_attack_boost` |
 | `01178` | **Kree Manipulator (treachery)** | `core_encounter` | `kree_manipulator_boost` |
+
+### <a id="if-activation-defeated-character"></a>`IF_ACTIVATION_DEFEATED_CHARACTER` (1 Cards)
+
+| Card Code | Card Name | Pack | Declared In Abilities |
+| :--- | :--- | :--- | :--- |
+| `90004` | **Bring the Hammer Down (treachery)** | `ron_encounter` | `hammer_boost` |
 
 ### <a id="if-all-allies-match"></a>`IF_ALL_ALLIES_MATCH` (1 Cards)
 

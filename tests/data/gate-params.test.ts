@@ -108,6 +108,7 @@ const EXPECTED_GATE_FIELDS = {
     },
     NEGATE,
   ],
+  IF_ACTIVATION_DEFEATED_CHARACTER: [NEGATE],
 } as const;
 
 const EXPECTED_HAS_REQUIRED = {
@@ -121,11 +122,12 @@ const EXPECTED_HAS_REQUIRED = {
   IF_RESOURCE_MATCH: true,
   IF_UNDEFENDED_ATTACK: false,
   IF_ACTIVATION_DEALT_DAMAGE: false,
+  IF_ACTIVATION_DEFEATED_CHARACTER: false,
   IF_COUNTERS: true,
 } as const;
 
 describe('Step Gate Registry and Param Schemas (ADR-0080, Issues #289, #290)', () => {
-  it('defines the 10 canonical StepGateSchema values', () => {
+  it('defines the canonical StepGateSchema values', () => {
     const canonicalGates = [
       'THEN',
       'IF_RESULT',
@@ -137,6 +139,7 @@ describe('Step Gate Registry and Param Schemas (ADR-0080, Issues #289, #290)', (
       'IF_RESOURCE_MATCH',
       'IF_UNDEFENDED_ATTACK',
       'IF_ACTIVATION_DEALT_DAMAGE',
+      'IF_ACTIVATION_DEFEATED_CHARACTER',
       'IF_COUNTERS',
     ];
     for (const gate of canonicalGates) {

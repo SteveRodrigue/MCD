@@ -172,6 +172,7 @@ export const RESOURCES_HANDLERS = {
   MODIFY_MAX_HEALTH: handleModifyRestrictedLimit,
   CANNOT_TAKE_DAMAGE: handleModifyRestrictedLimit,
   CANNOT_BE_ATTACKED: handleModifyRestrictedLimit,
+  CANNOT_HAVE_STATUS: handleModifyRestrictedLimit,
   THREAT_CANNOT_BE_REMOVED: handleModifyRestrictedLimit,
   DOUBLE_RESOURCE_FOR_ASPECT: handleModifyRestrictedLimit,
   RESTRICT_DEFENSE: handleModifyRestrictedLimit,

@@ -262,7 +262,12 @@ Not covered yet: a whole card that cannot be canceled (#286) and the global "Tre
 ### `ACTIVATE_MINIONS`
 
 - **References:** _Evil Alliance_ `45078`
-- **Description:** Each minion in play that matches `filter` activates against this player, whoever it is engaged with: it attacks a hero and schemes against an alter-ego.
+- **Description:** Each minion in play that matches `filter` activates: it attacks a hero and schemes against an alter-ego. `against` picks the player: `RESOLVING_PLAYER` (default, "activates against you") or `ENGAGED_PLAYER` ("activates against the player it is engaged with").
+
+### `ENGAGE_MINION`
+
+- **References:** _Ronan the Accuser_ `90001`
+- **Description:** The source minion (`target: "SELF"`) engages the player named by `engagePlayer` (RR v1.8 Engage). It does nothing if the minion is already engaged with that player, and Quickstrike resolves when it does engage. On a tie for `HERO_WITH_FEWEST_HIT_POINTS`, the first player chooses.
 
 ### `FLIP_CARD`
 

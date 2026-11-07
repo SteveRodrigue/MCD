@@ -1350,7 +1350,7 @@
                     "label": "Spend 2 resources of any type",
                     "cost": {
                       "resourceCost": {
-                        "any": 2
+                        "wild": 2
                       }
                     },
                     "steps": []
@@ -1389,9 +1389,9 @@
       ],
       "audit": {
         "createdAt": "2026-11-04T22:00:00Z",
-        "updatedAt": "2026-11-04T22:00:00Z",
-        "reviewedAt": "2026-11-04T22:00:00Z",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-11-07T00:30:00Z",
+        "reviewedAt": "2026-11-07T00:30:00Z",
+        "reviewedBy": "claude",
         "rulesVersion": "v1.8",
         "confidence": 100,
         "originalText": "<b>When Revealed</b>: Choose to either spend 2 resources of any type or give the villain 1 facedown boost card.\n<hr />\n[star] <b>Boost</b>: Give the villain 1 additional boost card for this activation."
@@ -1469,9 +1469,7 @@
                   "from": "ENTITY_COUNT",
                   "target": "ALL_FRIENDLY_CHARACTERS",
                   "filter": {
-                    "hasStatus": [
-                      "STUNNED"
-                    ]
+                    "hasStatus": ["STUNNED"]
                   },
                   "multiplier": 2
                 }
@@ -1716,9 +1714,7 @@
                 "count": 7,
                 "matchingDestination": "PLAY",
                 "filter": {
-                  "codes": [
-                    "02042"
-                  ]
+                  "codes": ["02042"]
                 }
               }
             },
@@ -1936,10 +1932,7 @@
                 "target": "ENGAGED_PLAYER",
                 "count": 1,
                 "filter": {
-                  "resourceIcons": [
-                    "mental",
-                    "physical"
-                  ]
+                  "resourceIcons": ["mental", "physical"]
                 }
               }
             }

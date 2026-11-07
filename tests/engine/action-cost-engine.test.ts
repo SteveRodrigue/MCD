@@ -792,6 +792,96 @@ describe('Milestone 2A.1: Declarative Action Cost & Pre-Check Engine', () => {
       expect(canPayStandard.allowed).toBe(true);
     });
 
+    describe('Upgraded Drones (01142): Spend [energy] [mental] [physical] resources', () => {
+      const iconCard = (
+        id: string,
+        icons: { energy?: number; mental?: number; physical?: number; wild?: number },
+      ) => {
+        const total = Object.values(icons).reduce((sum, n) => sum + n, 0);
+        return {
+          instanceId: id,
+          card: {
+            ...cardCatalog.getCard('01005')!,
+            resources: { energy: 0, mental: 0, physical: 0, wild: 0, ...icons, total },
+          },
+          exhausted: false,
+        };
+      };
+      const discardDrones = cardCatalog
+        .getCard('01142')!
+        .enrichment!.abilities!.find((a) => a.id === 'upgraded_drones_discard')!;
+
+      it('one energy resource does not pay for the whole ability', () => {
+        const p1 = state.players[0];
+        p1.hand = [iconCard('e', { energy: 1 })];
+
+        const check = canPayAbilityCost(state, p1, discardDrones, undefined, {
+          paymentCardInstanceIds: ['e'],
+        });
+
+        expect(check.allowed).toBe(false);
+      });
+
+      it('three energy resources do not replace the mental and physical ones', () => {
+        const p1 = state.players[0];
+        p1.hand = [iconCard('e', { energy: 3 })];
+
+        const check = canPayAbilityCost(state, p1, discardDrones, undefined, {
+          paymentCardInstanceIds: ['e'],
+        });
+
+        expect(check.allowed).toBe(false);
+      });
+
+      it('one resource of each type pays for it', () => {
+        const p1 = state.players[0];
+        p1.hand = [
+          iconCard('e', { energy: 1 }),
+          iconCard('m', { mental: 1 }),
+          iconCard('p', { physical: 1 }),
+        ];
+
+        const check = canPayAbilityCost(state, p1, discardDrones, undefined, {
+          paymentCardInstanceIds: ['e', 'm', 'p'],
+        });
+
+        expect(check.allowed).toBe(true);
+      });
+
+      it('a wild resource fills the one missing type, and only one', () => {
+        const p1 = state.players[0];
+        p1.hand = [
+          iconCard('e', { energy: 1 }),
+          iconCard('m', { mental: 1 }),
+          iconCard('w', { wild: 1 }),
+        ];
+        expect(
+          canPayAbilityCost(state, p1, discardDrones, undefined, {
+            paymentCardInstanceIds: ['e', 'm', 'w'],
+          }).allowed,
+        ).toBe(true);
+
+        p1.hand = [iconCard('e', { energy: 1 }), iconCard('w', { wild: 1 })];
+        expect(
+          canPayAbilityCost(state, p1, discardDrones, undefined, {
+            paymentCardInstanceIds: ['e', 'w'],
+          }).allowed,
+        ).toBe(false);
+      });
+
+      it('the ability is not offered when the hand cannot make all three types', () => {
+        const p1 = state.players[0];
+        p1.tableau = [];
+        p1.hand = [
+          iconCard('e1', { energy: 1 }),
+          iconCard('e2', { energy: 1 }),
+          iconCard('e3', { energy: 1 }),
+        ];
+
+        expect(canPayAbilityCost(state, p1, discardDrones).allowed).toBe(false);
+      });
+    });
+
     it('Overpayment with Captain Marvel 3-energy card (Energy Absorption 01014): 4 tokens -> 7 tokens -> clamped 10 damage Blast', () => {
       const p1 = state.players[0];
       p1.currentForm = 'hero';

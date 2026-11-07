@@ -210,7 +210,7 @@ describe('Identity & Card Payment Subsystem Integration (Issue #162)', () => {
             }}
             abilityCost={{
               amount: 1,
-              resourceType: 'energy',
+              resources: { energy: 1 },
               title: 'Action: RECHANNEL',
             }}
             player={player}
@@ -277,7 +277,7 @@ describe('Identity & Card Payment Subsystem Integration (Issue #162)', () => {
             }}
             abilityCost={{
               amount: 1,
-              resourceType: 'wild',
+              resources: { wild: 1 },
               title: 'Action: RECHANNEL',
             }}
             player={player}

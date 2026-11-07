@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { setupGame, createCardInstance } from '../../src/engine/state/game-setup';
 import { HeroCard, AlterEgoCard, GameState, CardInstance } from '../../src/engine/models';
@@ -41,14 +41,17 @@ describe('CardPaymentModal typed resource eligibility (Issues #180, #129)', () =
     return inst;
   }
 
-  function renderModal(abilityCost: any) {
-    state.players[0].hand = [
+  function renderModal(
+    abilityCost: any,
+    hand: CardInstance[] = [
       handCard('Physical Card', { physical: 1 }),
       handCard('Energy Card', { energy: 1 }),
       handCard('Mental Card', { mental: 1 }),
       handCard('Wild Card', { wild: 1 }),
       handCard('Blank Card', {}),
-    ];
+    ],
+  ) {
+    state.players[0].hand = hand;
     render(
       <TestSession state={state}>
         <CardPaymentModal
@@ -89,7 +92,7 @@ describe('CardPaymentModal typed resource eligibility (Issues #180, #129)', () =
   });
 
   it('Energy cost (Rechannel): only Energy and Wild cards are selectable', () => {
-    renderModal({ amount: 1, resourceType: 'energy', title: 'Rechannel' });
+    renderModal({ amount: 1, resources: { energy: 1 }, title: 'Rechannel' });
     expect(isDisabled('Energy Card')).toBe(false);
     expect(isDisabled('Wild Card')).toBe(false);
     expect(isDisabled('Physical Card')).toBe(true);
@@ -98,7 +101,7 @@ describe('CardPaymentModal typed resource eligibility (Issues #180, #129)', () =
   });
 
   it('Physical cost (Rhino attachment discard): only Physical and Wild cards are selectable', () => {
-    renderModal({ amount: 1, resourceType: 'physical', title: 'Discard attachment' });
+    renderModal({ amount: 1, resources: { physical: 1 }, title: 'Discard attachment' });
     expect(isDisabled('Physical Card')).toBe(false);
     expect(isDisabled('Wild Card')).toBe(false);
     expect(isDisabled('Energy Card')).toBe(true);
@@ -107,10 +110,55 @@ describe('CardPaymentModal typed resource eligibility (Issues #180, #129)', () =
   });
 
   it('requirePrinted keeps excluding Wild cards', () => {
-    renderModal({ amount: 1, resourceType: 'energy', requirePrinted: true, title: 'Printed' });
+    renderModal({ amount: 1, resources: { energy: 1 }, requirePrinted: true, title: 'Printed' });
     expect(isDisabled('Energy Card')).toBe(false);
     expect(isDisabled('Wild Card')).toBe(true);
     expect(isDisabled('Physical Card')).toBe(true);
+  });
+
+  it('Upgraded Drones asks for all 3 resources and offers every matching type', () => {
+    renderModal({
+      amount: 3,
+      resources: { energy: 1, mental: 1, physical: 1 },
+      title: 'Discard: Upgraded Drones',
+    });
+
+    expect(screen.getByText(/0 \/ 3/)).toBeTruthy();
+    expect(isDisabled('Energy Card')).toBe(false);
+    expect(isDisabled('Mental Card')).toBe(false);
+    expect(isDisabled('Physical Card')).toBe(false);
+    expect(isDisabled('Wild Card')).toBe(false);
+    expect(isDisabled('Blank Card')).toBe(true);
+  });
+
+  it('Upgraded Drones counts a second energy card as no progress and stays unpayable', () => {
+    renderModal(
+      {
+        amount: 3,
+        resources: { energy: 1, mental: 1, physical: 1 },
+        title: 'Discard: Upgraded Drones',
+      },
+      [
+        handCard('Energy Card', { energy: 1 }),
+        handCard('Second Energy Card', { energy: 1 }),
+        handCard('Mental Card', { mental: 1 }),
+        handCard('Wild Card', { wild: 1 }),
+      ],
+    );
+    const confirm = () => screen.getByRole('button', { name: /confirm/i }) as HTMLButtonElement;
+
+    fireEvent.click(screen.getByText('Energy Card'));
+    fireEvent.click(screen.getByText('Second Energy Card'));
+    expect(screen.getByText(/1 \/ 3/)).toBeTruthy();
+    expect(confirm().disabled).toBe(true);
+
+    fireEvent.click(screen.getByText('Mental Card'));
+    expect(screen.getByText(/2 \/ 3/)).toBeTruthy();
+    expect(confirm().disabled).toBe(true);
+
+    fireEvent.click(screen.getByText('Wild Card'));
+    expect(screen.getByText(/3 \/ 3/)).toBeTruthy();
+    expect(confirm().disabled).toBe(false);
   });
 
   it('Untyped generic cost leaves every card selectable', () => {
@@ -123,11 +171,14 @@ describe('CardPaymentModal typed resource eligibility (Issues #180, #129)', () =
 
 describe('isGeneratorIneligibleForCost (Issues #180, #129)', () => {
   it('mismatched concrete generator is ineligible; wild and untyped stay eligible', () => {
-    expect(isGeneratorIneligibleForCost({ resourceType: 'mental' }, 'energy', false)).toBe(true);
-    expect(isGeneratorIneligibleForCost({ resourceType: 'energy' }, 'energy', false)).toBe(false);
-    expect(isGeneratorIneligibleForCost({ resourceType: 'wild' }, 'energy', false)).toBe(false);
-    expect(isGeneratorIneligibleForCost({ resourceType: 'wild' }, 'energy', true)).toBe(true);
+    const energy = { energy: 1 };
+    expect(isGeneratorIneligibleForCost({ resourceType: 'mental' }, energy, false)).toBe(true);
+    expect(isGeneratorIneligibleForCost({ resourceType: 'energy' }, energy, false)).toBe(false);
+    expect(isGeneratorIneligibleForCost({ resourceType: 'wild' }, energy, false)).toBe(false);
+    expect(isGeneratorIneligibleForCost({ resourceType: 'wild' }, energy, true)).toBe(true);
     expect(isGeneratorIneligibleForCost({ resourceType: 'mental' }, undefined, false)).toBe(false);
-    expect(isGeneratorIneligibleForCost({ resourceType: 'mental' }, 'wild', false)).toBe(false);
+    expect(isGeneratorIneligibleForCost({ resourceType: 'mental' }, { wild: 1 }, false)).toBe(
+      false,
+    );
   });
 });

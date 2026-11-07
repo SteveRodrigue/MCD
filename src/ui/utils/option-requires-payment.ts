@@ -1,4 +1,6 @@
 import type { DecisionPromptOption } from '../../engine/models';
+import { getResourceCostTotal } from '../../engine/pipeline/cost-engine';
+import type { ResourceCost } from '../../data/supplemental/schema';
 
 /**
  * True when picking this decision prompt option still has to be paid for.
@@ -20,10 +22,12 @@ export function optionRequiresPayment(option: DecisionPromptOption): boolean {
   );
 }
 
-/** The type and amount of an option's own resource cost ("spend an [energy] resource"). */
+/** The types and total of an option's own resource cost ("spend [energy] [mental] resources"). */
 export function optionOwnResourceCost(
   option: DecisionPromptOption,
-): { amount: number; resourceType: string } | undefined {
-  const [entry] = Object.entries(option.cost?.resourceCost ?? {});
-  return entry ? { resourceType: entry[0], amount: Number(entry[1]) } : undefined;
+): { amount: number; resources: ResourceCost } | undefined {
+  const resources = option.cost?.resourceCost;
+  return resources && Object.keys(resources).length > 0
+    ? { resources, amount: getResourceCostTotal(resources) }
+    : undefined;
 }

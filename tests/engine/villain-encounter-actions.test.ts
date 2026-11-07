@@ -137,7 +137,7 @@ describe('Villain & Encounter Card Action Discovery & Legality (Issue #314 / RR 
 
     // Give player physical, mental, energy resources
     const phys = createCardInstance(cardCatalog.getCard('01003')!);
-    const energy = createCardInstance(cardCatalog.getCard('01004')!);
+    const energy = createCardInstance(cardCatalog.getCard('01002')!);
     const mental = createCardInstance(cardCatalog.getCard('01005')!);
     p1.hand = [phys, energy, mental];
 

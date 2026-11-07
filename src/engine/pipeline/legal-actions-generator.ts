@@ -57,6 +57,14 @@ export interface LegalActionReport {
   allActions: LegalActionItem[];
 }
 
+/** Every type of a resource cost: `1 ENERGY 1 MENTAL 1 PHYSICAL`. */
+function formatResourceCostBadge(resourceCost: ResourceCost): string {
+  const parts = Object.entries(resourceCost).map(
+    ([type, amount]) => `${amount} ${type.toUpperCase()}`,
+  );
+  return parts.length > 0 ? parts.join(' ') : '1 RESOURCES';
+}
+
 export function formatTimingBadge(timing: string): string {
   if (timing === 'ALTER_EGO_ACTION') return 'ALTER-EGO ACTION';
   if (timing === 'HERO_ACTION') return 'HERO ACTION';
@@ -100,12 +108,7 @@ function getTableauActionItems(
 
           if (ab.cost?.resourceCost) {
             requiresModal = 'payment';
-            const requiredType = Object.keys(ab.cost.resourceCost)[0] as
-              keyof ResourceCost | undefined;
-            const requiredAmount = requiredType ? ab.cost.resourceCost[requiredType] || 1 : 1;
-            badge = requiredType
-              ? `${requiredAmount} ${requiredType.toUpperCase()}`
-              : `${requiredAmount} RESOURCES`;
+            badge = formatResourceCostBadge(ab.cost.resourceCost);
           } else if (ab.cost?.discardCard && ab.cost.discardCard.from === 'HAND') {
             requiresModal = 'payment';
             const count = ab.cost.discardCard.count || 1;
@@ -333,11 +336,7 @@ function getEncounterLegalActions(state: GameState, player: PlayerState): LegalA
 
       if (ab.cost?.resourceCost) {
         requiresModal = 'payment';
-        const requiredType = Object.keys(ab.cost.resourceCost)[0] as keyof ResourceCost | undefined;
-        const requiredAmount = requiredType ? ab.cost.resourceCost[requiredType] || 1 : 1;
-        badge = requiredType
-          ? `${requiredAmount} ${requiredType.toUpperCase()}`
-          : `${requiredAmount} RESOURCES`;
+        badge = formatResourceCostBadge(ab.cost.resourceCost);
       } else if (ab.cost?.discardCard && ab.cost.discardCard.from === 'HAND') {
         requiresModal = 'payment';
         const count = ab.cost.discardCard.count || 1;

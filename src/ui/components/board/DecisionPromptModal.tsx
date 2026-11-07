@@ -10,6 +10,7 @@ import { WakandaForeverModal } from './WakandaForeverModal';
 import { DistributeAmountModal } from './DistributeAmountModal';
 import { SelectCardsModal } from './SelectCardsModal';
 import { SimultaneousAbilitiesModal } from './SimultaneousAbilitiesModal';
+import { getResourceCostTotal } from '../../../engine/pipeline/cost-engine';
 import { optionOwnResourceCost, optionRequiresPayment } from '../../utils/option-requires-payment';
 import { AccentStripe } from '../../theme/AccentStripe';
 import { ModalScaffold } from '../../theme/ModalScaffold';
@@ -499,12 +500,9 @@ const DecisionPromptModalBody: React.FC<DecisionPromptModalProps> = ({
               optParams?.resourceCost?.amount ??
               (option as any).resourceCost?.amount ??
               optionOwnResourceCost(option)?.amount ??
-              (typeof optParams?.ability?.cost?.resourceCost === 'number'
-                ? optParams.ability.cost.resourceCost
-                : typeof optParams?.ability?.cost?.resourceCost === 'object' &&
-                    optParams?.ability?.cost?.resourceCost !== null
-                  ? Object.values(optParams.ability.cost.resourceCost)[0]
-                  : 1);
+              (optParams?.ability?.cost?.resourceCost
+                ? getResourceCostTotal(optParams.ability.cost.resourceCost)
+                : 1);
 
             const optionCardCode = option.cardCode;
             const optionCard = optionCardCode ? cardCatalog.getCard(optionCardCode) : undefined;

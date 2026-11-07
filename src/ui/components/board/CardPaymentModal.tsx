@@ -15,13 +15,18 @@ import {
   isAbilityPlayableInForm,
   getEffectiveCardCost,
   getDiscardCostBounds,
+  countResourcesTowardCost,
 } from '../../../engine/pipeline/cost-engine';
 import {
   getEffectiveMaxHealth,
   getEffectiveMinionHitPoints,
 } from '../../../engine/pipeline/stat-calculator';
 import { matchesCardFilter } from '../../../engine/filters/card-filter';
-import type { UniversalCardFilter, CardLocationSelector } from '../../../data/supplemental/schema';
+import type {
+  UniversalCardFilter,
+  CardLocationSelector,
+  ResourceCost,
+} from '../../../data/supplemental/schema';
 import { FormattedCardText } from '../cards/FormattedCardText';
 import { CardArtThumbnail } from '../cards/CardArtThumbnail';
 import { locateCard, readCardResources } from '../../../engine/queries/card-inspector';
@@ -40,7 +45,8 @@ interface CardPaymentModalProps {
   cardToPlay: CardInstance | null;
   abilityCost?: {
     amount?: number;
-    resourceType?: 'physical' | 'energy' | 'mental' | 'wild';
+    /** The specified types and quantities; absent, any resources pay `amount`. */
+    resources?: ResourceCost;
     requirePrinted?: boolean;
     /** The ability's amount is the number of resources spent (`RESOURCES_SPENT`), e.g. Energy Channel. */
     scalesWithResources?: boolean;
@@ -192,6 +198,13 @@ const TargetChoices: React.FC<TargetChoicesProps> = ({
     </div>
   );
 };
+
+/** The card-text icons of a cost, one per resource: `[energy] [mental] [physical]`. */
+function formatRequiredIcons(resources: ResourceCost): string {
+  return Object.entries(resources)
+    .flatMap(([type, amount]) => Array<string>(amount ?? 0).fill(`[${type}]`))
+    .join(' ');
+}
 
 function getDiscardCost(
   abilityCost: CardPaymentModalProps['abilityCost'],
@@ -670,28 +683,30 @@ const CardPaymentModalBody: React.FC<CardPaymentModalProps> = ({
   const isRequirePrinted = Boolean(abilityCost?.requirePrinted);
   const isScalingPerResource = Boolean(abilityCost?.scalesWithResources);
 
-  const committedMatching = useMemo(() => {
-    if (abilityCost?.resourceType) {
-      const matching =
-        abilityCost.resourceType === 'physical'
-          ? resourceBreakdown.physicalCount
-          : abilityCost.resourceType === 'energy'
-            ? resourceBreakdown.energyCount
-            : abilityCost.resourceType === 'mental'
-              ? resourceBreakdown.mentalCount
-              : totalGenerated;
-      return isRequirePrinted ? matching : matching + resourceBreakdown.wildCount;
-    }
-    return totalGenerated;
-  }, [abilityCost, isRequirePrinted, resourceBreakdown, totalGenerated]);
+  const requiredResources = abilityCost?.resources;
+  const requiredTypes = requiredResources ? Object.keys(requiredResources) : [];
 
-  const isResourceCostCovered = useMemo(() => {
-    if (cost <= 0) return true;
-    if (abilityCost?.resourceType) {
-      return committedMatching >= cost;
-    }
-    return totalGenerated >= cost;
-  }, [abilityCost?.resourceType, committedMatching, totalGenerated, cost]);
+  // What the selection pays toward the cost, by the same count the engine validates with
+  const { coveredAmount, committedMatching } = useMemo(() => {
+    if (!requiredResources)
+      return { coveredAmount: totalGenerated, committedMatching: totalGenerated };
+    const { energyCount, mentalCount, physicalCount, wildCount } = resourceBreakdown;
+    const produced = [
+      ...Array<string>(energyCount).fill('energy'),
+      ...Array<string>(mentalCount).fill('mental'),
+      ...Array<string>(physicalCount).fill('physical'),
+      ...Array<string>(wildCount).fill('wild'),
+    ];
+    return {
+      coveredAmount: countResourcesTowardCost(produced, requiredResources, isRequirePrinted),
+      // A cost that scales with resources spent counts the excess too
+      committedMatching: produced.filter(
+        (r) => r in requiredResources || (!isRequirePrinted && r === 'wild'),
+      ).length,
+    };
+  }, [requiredResources, isRequirePrinted, resourceBreakdown, totalGenerated]);
+
+  const isResourceCostCovered = cost <= 0 || coveredAmount >= cost;
 
   // The discard cost: given by the ability being used, or declared on the event being played.
   const discardCost = useMemo(
@@ -863,13 +878,19 @@ const CardPaymentModalBody: React.FC<CardPaymentModalProps> = ({
                   >
                     {isScalingPerResource ? `+${committedMatching}` : cost}
                   </span>
-                  <span className="text-xs font-bold uppercase">
-                    {isScalingPerResource
-                      ? 'Tokens'
-                      : abilityCost?.resourceType
-                        ? abilityCost.resourceType
+                  {isScalingPerResource ? (
+                    <span className="text-xs font-bold uppercase">Tokens</span>
+                  ) : requiredTypes.length > 1 ? (
+                    <span data-testid="required-resources" className="text-xs">
+                      <FormattedCardText text={formatRequiredIcons(requiredResources!)} />
+                    </span>
+                  ) : (
+                    <span className="text-xs font-bold uppercase">
+                      {requiredTypes.length === 1 && !requiredResources?.wild
+                        ? requiredTypes[0]
                         : 'Res'}
-                  </span>
+                    </span>
+                  )}
                 </>
               ) : discardCost ? (
                 <span className="text-sm font-black uppercase px-2.5 py-1 bg-comic-red text-white rounded-sm border border-comic-black shadow-comic-xs">
@@ -998,11 +1019,9 @@ const CardPaymentModalBody: React.FC<CardPaymentModalProps> = ({
                 }`}
               >
                 {isScalingPerResource
-                  ? `${committedMatching} ${abilityCost?.resourceType || 'matching'} (Min ${cost} needed)`
-                  : `${abilityCost?.resourceType ? committedMatching : totalGenerated} / ${cost} ${
-                      isCostCovered
-                        ? '✓ (Ready)'
-                        : `(Need ${cost - (abilityCost?.resourceType ? committedMatching : totalGenerated)} more)`
+                  ? `${committedMatching} ${requiredTypes.join(' / ') || 'matching'} (Min ${cost} needed)`
+                  : `${coveredAmount} / ${cost} ${
+                      isCostCovered ? '✓ (Ready)' : `(Need ${cost - coveredAmount} more)`
                     }`}
               </span>
             </div>
@@ -1014,13 +1033,7 @@ const CardPaymentModalBody: React.FC<CardPaymentModalProps> = ({
                   isCostCovered ? 'bg-comic-green' : 'bg-comic-yellow'
                 }`}
                 style={{
-                  width: `${Math.min(
-                    100,
-                    cost === 0
-                      ? 100
-                      : ((abilityCost?.resourceType ? committedMatching : totalGenerated) / cost) *
-                          100,
-                  )}%`,
+                  width: `${Math.min(100, cost === 0 ? 100 : (coveredAmount / cost) * 100)}%`,
                 }}
               />
             </div>
@@ -1075,12 +1088,12 @@ const CardPaymentModalBody: React.FC<CardPaymentModalProps> = ({
                   aspectDoubleStep && aspectDoubleStep.effectParams?.aspect === card.faction;
                 const printedIcons = readCardResources(hCard);
                 const matchingPrintedCount =
-                  isRequirePrinted && abilityCost?.resourceType
-                    ? printedIcons.filter((r) => r === abilityCost.resourceType).length
+                  isRequirePrinted && requiredResources
+                    ? printedIcons.filter((r) => r in requiredResources).length
                     : undefined;
                 const isHandCardDisabled =
                   isUsedForDiscardCost ||
-                  isHandCardIneligibleForCost(hCard, abilityCost?.resourceType, isRequirePrinted);
+                  isHandCardIneligibleForCost(hCard, requiredResources, isRequirePrinted);
 
                 return (
                   <ChoiceCard
@@ -1095,7 +1108,7 @@ const CardPaymentModalBody: React.FC<CardPaymentModalProps> = ({
                     badge={
                       matchingPrintedCount !== undefined ? (
                         <span className={`text-xs font-black px-2 py-0.5 ${style.chip}`}>
-                          {matchingPrintedCount} {abilityCost?.resourceType?.toUpperCase()}
+                          {matchingPrintedCount} {requiredTypes.join(' / ').toUpperCase()}
                         </span>
                       ) : isDoubled ? (
                         <span className="text-xs font-black px-2.5 py-0.5 bg-emerald-600 text-white rounded-md border-2 border-comic-black shadow-comic-sm">
@@ -1125,7 +1138,7 @@ const CardPaymentModalBody: React.FC<CardPaymentModalProps> = ({
                 const isSelected = selectedGeneratorIds.includes(gen.id);
                 const isGenDisabled =
                   gen.amount === 0 ||
-                  isGeneratorIneligibleForCost(gen, abilityCost?.resourceType, isRequirePrinted);
+                  isGeneratorIneligibleForCost(gen, requiredResources, isRequirePrinted);
                 return (
                   <ChoiceCard
                     key={gen.id}

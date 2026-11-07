@@ -488,6 +488,7 @@ export const GenerateResourceParamsSchema = z
  * `wild` is a legal key only for a printed "Spend a [wild] resource" cost. An event's printed cost is
  * read from the upstream card, never declared here.
  */
+/** Each type must be paid in its quantity; `wild` is a slot any resource can fill (RR v1.8 "Resource"). */
 const ResourceCostSchema = z
   .object({
     physical: z.number().int().positive().optional(),

@@ -9,7 +9,6 @@ import {
   NormalizedCard,
   ActiveCostReduction,
   CardType,
-  CardResources,
 } from '../models';
 import { getEffectiveMaxHealth } from './stat-calculator';
 import { randomInt } from '../state/rng';
@@ -62,55 +61,76 @@ export function getDiscardCostBounds(discardCost: { count?: number; maxCount?: n
  */
 export function extractResourceCost(cost?: CardAbility['cost']): {
   hasCost: boolean;
-  requiredType?: string;
+  requiredResources?: ResourceCost;
   requiredAmount: number;
   requirePrinted: boolean;
 } {
-  if (!cost) {
+  if (cost?.resourceCost === undefined) {
     return { hasCost: false, requiredAmount: 0, requirePrinted: false };
   }
-  const requirePrinted = Boolean(cost.requirePrinted);
-  if (cost.resourceCost !== undefined) {
-    const keys = Object.keys(cost.resourceCost) as (keyof ResourceCost)[];
-    const reqType = keys[0];
-    const reqAmount = reqType ? cost.resourceCost[reqType] || 1 : 1;
-    return {
-      hasCost: true,
-      requiredType: reqType,
-      requiredAmount: reqAmount,
-      requirePrinted,
-    };
-  }
-  return { hasCost: false, requiredAmount: 0, requirePrinted: false };
+  const isTyped = Object.keys(cost.resourceCost).length > 0;
+  return {
+    hasCost: true,
+    requiredResources: isTyped ? cost.resourceCost : undefined,
+    requiredAmount: isTyped ? getResourceCostTotal(cost.resourceCost) : 1,
+    requirePrinted: Boolean(cost.requirePrinted),
+  };
+}
+
+/** How many resources a typed cost takes in total: `{ energy: 1, mental: 1 }` takes 2. */
+export function getResourceCostTotal(resourceCost: ResourceCost): number {
+  return Object.values(resourceCost).reduce((sum, amount) => sum + (amount ?? 0), 0);
 }
 
 /**
- * Calculates matching resources provided by a physical card in hand (RR v1.8 p. 15).
+ * How much of a cost the produced resources pay (RR v1.8 "Resource"): the specified types in the
+ * specified quantities. Each resource fills one slot and excess is lost. A Wild resource fills any
+ * slot unless the cost requires printed icons, and a required `wild` is a slot for any resource.
+ * Without `required` the cost takes any resources, so all of them count.
  */
-function getCardProvidedResources(
-  cardInst: CardInstance,
-  requiredType?: string,
-  requirePrinted?: boolean,
+export function countResourcesTowardCost(
+  produced: readonly string[],
+  required?: ResourceCost,
+  requirePrinted: boolean = false,
 ): number {
-  const printedList = readCardResources(cardInst);
-  if (printedList.length > 0) {
-    if (requirePrinted && requiredType) {
-      return printedList.filter((r) => r === requiredType).length;
+  if (!required) return produced.length;
+  const open = { physical: 0, energy: 0, mental: 0, ...required };
+  let covered = 0;
+  let spare = 0;
+  let wild = 0;
+  for (const resource of produced) {
+    if (resource === 'wild') {
+      wild++;
+    } else if (open[resource as keyof ResourceCost]) {
+      open[resource as keyof ResourceCost]!--;
+      covered++;
+    } else {
+      spare++;
     }
-    if (!requiredType) {
-      return printedList.length;
-    }
-    return printedList.filter((r) => r === requiredType || r === 'wild').length;
   }
-  const res = cardInst.card?.resources;
-  if (!res) return requirePrinted ? 0 : !requiredType ? 1 : 0;
-  if (requirePrinted && requiredType) {
-    return (res[requiredType as keyof CardResources] as number | undefined) || 0;
-  }
-  if (!requiredType) {
-    return res.total || 1;
-  }
-  return ((res[requiredType as keyof CardResources] as number | undefined) || 0) + (res.wild || 0);
+  const wildFilled = requirePrinted
+    ? 0
+    : Math.min(wild, (open.physical ?? 0) + (open.energy ?? 0) + (open.mental ?? 0));
+  const anyFilled = Math.min(open.wild ?? 0, spare + wild - wildFilled);
+  return covered + wildFilled + anyFilled;
+}
+
+/**
+ * The resources a hand card generates when discarded (RR v1.8 p. 15). A card without printed icons
+ * still counts toward a cost of any type, but never matches a type.
+ */
+export function listCardResources(cardInst: CardInstance): string[] {
+  const printed = readCardResources(cardInst);
+  if (printed.length > 0) return printed;
+  return Array<string>(cardInst.card?.resources?.total || 1).fill('blank');
+}
+
+/** "1 energy, 1 mental" for a typed cost, "2 resources" otherwise. */
+function describeResourceCost(required: ResourceCost | undefined, amount: number): string {
+  if (!required) return `${amount} resources`;
+  return Object.entries(required)
+    .map(([type, count]) => `${count} ${type}`)
+    .join(', ');
 }
 
 /**
@@ -132,17 +152,26 @@ export function getHandCardResourceValue(
 }
 
 /**
- * Calculates matching resources provided by an in-play generator or identity ability (RR v1.8 p. 15, 25).
+ * How many resources an in-play generator or identity ability can generate (RR v1.8 p. 15, 25).
  */
 export function getGeneratorProvidedResources(
   state: GameState,
   player: PlayerState,
   gId: string,
-  requiredType?: string,
-  requirePrinted?: boolean,
 ): number {
+  return listGeneratorResources(state, player, gId).length;
+}
+
+/**
+ * The resources an in-play generator or identity ability can generate (RR v1.8 p. 15, 25).
+ */
+export function listGeneratorResources(
+  state: GameState,
+  player: PlayerState,
+  gId: string,
+): string[] {
   if (gId === 'identity_ability' || gId === player.activeFormCard?.code) {
-    let provided = 0;
+    const provided: string[] = [];
     for (const idAbility of player.activeFormCard?.enrichment?.abilities ?? []) {
       const isResource =
         idAbility.timing === 'RESOURCE' ||
@@ -168,29 +197,18 @@ export function getGeneratorProvidedResources(
       if (genStep && getStepEffectParams(genStep).fromCard) {
         const target = locateCard(state, getStepEffectParams(genStep).fromCard!, { player });
         if (!target) continue;
-        const printedList = readCardResources(target);
-        if (requirePrinted && requiredType) {
-          provided += printedList.filter((r) => r === requiredType).length;
-        } else if (!requiredType) {
-          provided += printedList.length;
-        } else {
-          provided += printedList.filter((r) => r === requiredType || r === 'wild').length;
-        }
+        provided.push(...readCardResources(target));
         continue;
       }
       const resType = (genStep?.effectParams?.resource as string) || 'wild';
       const amount = Number(genStep?.effectParams?.amount) || 1;
-      if (requirePrinted) {
-        if (resType === requiredType) provided += amount;
-      } else if (!requiredType || resType === requiredType || resType === 'wild') {
-        provided += amount;
-      }
+      provided.push(...Array<string>(amount).fill(resType));
     }
     return provided;
   }
 
   const gCard = player.tableau.find((c) => c.instanceId === gId);
-  if (!gCard || gCard.exhausted) return 0;
+  if (!gCard || gCard.exhausted) return [];
 
   const enrichment = gCard.card.enrichment || getCardEnrichment(gCard.card.code);
   const abilities = enrichment?.abilities || [];
@@ -199,28 +217,28 @@ export function getGeneratorProvidedResources(
   );
 
   // Uses counters alone do not make a card a resource generator (Tac Team, #43)
-  if (!tableAbility) return 0;
+  if (!tableAbility) return [];
 
-  if (!isAbilityPlayableInForm(tableAbility.timing, player.currentForm)) return 0;
+  if (!isAbilityPlayableInForm(tableAbility.timing, player.currentForm)) return [];
 
   const abilityKey = `${gCard.instanceId}_${tableAbility.id}`;
   if (
     tableAbility.limit === 'ONCE_PER_ROUND' &&
     (player.usedAbilitiesThisRound?.[abilityKey] || 0) >= 1
   ) {
-    return 0;
+    return [];
   }
   if (
     tableAbility.limit === 'ONCE_PER_PHASE' &&
     (player.usedAbilitiesThisPhase?.[abilityKey] || 0) >= 1
   ) {
-    return 0;
+    return [];
   }
 
   if (enrichment?.uses) {
     const uType = enrichment.uses.counterType;
     const count = gCard.tokens?.counters ?? (uType ? gCard.counters?.[uType] : undefined) ?? 0;
-    if (count <= 0) return 0;
+    if (count <= 0) return [];
   }
 
   const genStep = tableAbility.steps?.find((s) => s.effect === 'GENERATE_RESOURCE');
@@ -229,26 +247,37 @@ export function getGeneratorProvidedResources(
       player,
       sourceCardInstance: gCard,
     });
-    if (!target) return 0;
-    const printedList = readCardResources(target);
-    if (requirePrinted && requiredType) {
-      return printedList.filter((r) => r === requiredType).length;
-    }
-    if (!requiredType) {
-      return printedList.length;
-    }
-    return printedList.filter((r) => r === requiredType || r === 'wild').length;
+    return target ? readCardResources(target) : [];
   }
 
   const resType = (genStep?.effectParams?.resource as string) || 'wild';
   const amount = Number(genStep?.effectParams?.amount) || 1;
-  if (requirePrinted) {
-    return resType === requiredType ? amount : 0;
+  return Array<string>(amount).fill(resType);
+}
+
+/**
+ * The resource cost an ability is paid with: its own, or the printed cost of an event ability
+ * played from hand that declares none (RR v1.8 Costs).
+ */
+function getEffectiveResourceCost(
+  cost: CardAbility['cost'],
+  ability: CardAbility,
+  sourceCardInst?: CardInstance,
+): ReturnType<typeof extractResourceCost> {
+  const resCost = extractResourceCost(cost);
+  if (
+    !resCost.hasCost &&
+    ability.zone === 'HAND' &&
+    sourceCardInst?.card &&
+    ((sourceCardInst.card.type as string) === 'event' ||
+      sourceCardInst.card.type === CardType.EVENT)
+  ) {
+    const cardCost = sourceCardInst.card.cost ?? 0;
+    if (cardCost > 0) {
+      return { hasCost: true, requiredAmount: cardCost, requirePrinted: false };
+    }
   }
-  if (!requiredType || resType === requiredType || resType === 'wild') {
-    return amount;
-  }
-  return 0;
+  return resCost;
 }
 
 /**
@@ -429,32 +458,22 @@ export function canPayAbilityCost(
   }
 
   // 6. Resource Cost Validation (cost.resourceCost / cost.resources)
-  let resCost = extractResourceCost(cost);
-  if (
-    !resCost.hasCost &&
-    ability.zone === 'HAND' &&
-    sourceCardInst?.card &&
-    ((sourceCardInst.card.type as string) === 'event' ||
-      sourceCardInst.card.type === CardType.EVENT)
-  ) {
-    const cardCost = sourceCardInst.card.cost ?? 0;
-    if (cardCost > 0) {
-      resCost = {
-        hasCost: true,
-        requiredType: undefined,
-        requiredAmount: cardCost,
-        requirePrinted: false,
-      };
-    }
-  }
+  const resCost = getEffectiveResourceCost(cost, ability, sourceCardInst);
 
   if (resCost.hasCost) {
-    const { requiredType, requiredAmount, requirePrinted } = resCost;
+    const { requiredResources, requiredAmount, requirePrinted } = resCost;
     const specifiedPaymentIds = options?.paymentCardInstanceIds || [];
     const specifiedGeneratorIds = options?.generatorInstanceIds || [];
+    const requiredLabel = describeResourceCost(requiredResources, requiredAmount);
+    const generatorPays = (gId: string) =>
+      countResourcesTowardCost(
+        listGeneratorResources(state, player, gId),
+        requiredResources,
+        requirePrinted,
+      ) > 0;
 
     if (specifiedPaymentIds.length > 0 || specifiedGeneratorIds.length > 0) {
-      let providedAmount = 0;
+      const produced: string[] = [];
       for (const id of specifiedPaymentIds) {
         if (sourceCardInst && id === sourceCardInst.instanceId) {
           return { allowed: false, reason: 'A card cannot pay for its own cost.' };
@@ -463,24 +482,16 @@ export function canPayAbilityCost(
         if (!cardInst) {
           return { allowed: false, reason: `Selected payment card ${id} not found in hand.` };
         }
-        providedAmount += getCardProvidedResources(cardInst, requiredType, requirePrinted);
+        produced.push(...listCardResources(cardInst));
       }
       for (const gId of specifiedGeneratorIds) {
         if (gId === 'identity_ability' || gId === player.activeFormCard.code) {
-          const genAmt = getGeneratorProvidedResources(
-            state,
-            player,
-            gId,
-            requiredType,
-            requirePrinted,
-          );
-          if (genAmt <= 0) {
+          if (!generatorPays(gId)) {
             return {
               allowed: false,
-              reason: `Identity resource ability cannot generate ${requiredType || 'the required'} resource.`,
+              reason: `Identity resource ability cannot generate any of ${requiredLabel}.`,
             };
           }
-          providedAmount += genAmt;
         } else {
           const gCard = player.tableau.find((c) => c.instanceId === gId);
           if (!gCard) {
@@ -495,59 +506,46 @@ export function canPayAbilityCost(
               reason: `Resource generator ${gCard.card.name} is already exhausted.`,
             };
           }
-          const genAmt = getGeneratorProvidedResources(
-            state,
-            player,
-            gId,
-            requiredType,
-            requirePrinted,
-          );
-          if (genAmt <= 0) {
+          if (!generatorPays(gId)) {
             return {
               allowed: false,
-              reason: `Resource generator ${gCard.card.name} cannot generate ${requiredType || 'the required'} resource.`,
+              reason: `Resource generator ${gCard.card.name} cannot generate any of ${requiredLabel}.`,
             };
           }
-          providedAmount += genAmt;
         }
+        produced.push(...listGeneratorResources(state, player, gId));
       }
 
+      const providedAmount = countResourcesTowardCost(produced, requiredResources, requirePrinted);
       if (providedAmount < requiredAmount) {
         return {
           allowed: false,
-          reason: `Insufficient resources selected (Requires ${requiredAmount} ${requiredType || 'resources'}, provided ${providedAmount}).`,
+          reason: `Insufficient resources selected (Requires ${requiredLabel}, provided ${providedAmount}).`,
         };
       }
     } else {
       // General availability check across player hand cards AND ready generators
-      let availableAmount = 0;
+      const available: string[] = [];
       for (const cardInst of player.hand) {
         if (sourceCardInst && cardInst.instanceId === sourceCardInst.instanceId) continue;
-        availableAmount += getCardProvidedResources(cardInst, requiredType, requirePrinted);
+        available.push(...listCardResources(cardInst));
       }
       for (const gCard of player.tableau) {
         if (!gCard.exhausted) {
-          availableAmount += getGeneratorProvidedResources(
-            state,
-            player,
-            gCard.instanceId,
-            requiredType,
-            requirePrinted,
-          );
+          available.push(...listGeneratorResources(state, player, gCard.instanceId));
         }
       }
-      availableAmount += getGeneratorProvidedResources(
-        state,
-        player,
-        'identity_ability',
-        requiredType,
+      available.push(...listGeneratorResources(state, player, 'identity_ability'));
+
+      const availableAmount = countResourcesTowardCost(
+        available,
+        requiredResources,
         requirePrinted,
       );
-
       if (availableAmount < requiredAmount) {
         return {
           allowed: false,
-          reason: `Insufficient resources (Requires ${requiredAmount} ${requiredType || 'resources'}, has ${availableAmount}).`,
+          reason: `Insufficient resources (Requires ${requiredLabel}, has ${availableAmount}).`,
         };
       }
     }
@@ -734,31 +732,14 @@ export function executeAbilityCost(
   // 5. Resource Cost Payment (cost.resourceCost / cost.resources)
   let resourcesPaid = 0;
   let resourcesSpent: string[] = [];
-  let resCost = extractResourceCost(cost);
-  if (
-    !resCost.hasCost &&
-    ability.zone === 'HAND' &&
-    sourceCardInst?.card &&
-    ((sourceCardInst.card.type as string) === 'event' ||
-      sourceCardInst.card.type === CardType.EVENT)
-  ) {
-    const cardCost = sourceCardInst.card.cost ?? 0;
-    if (cardCost > 0) {
-      resCost = {
-        hasCost: true,
-        requiredType: undefined,
-        requiredAmount: cardCost,
-        requirePrinted: false,
-      };
-    }
-  }
+  const resCost = getEffectiveResourceCost(cost, ability, sourceCardInst);
   if (resCost.hasCost) {
-    const { requiredType, requiredAmount, requirePrinted } = resCost;
+    const { requiredResources, requiredAmount, requirePrinted } = resCost;
     const paymentRes = executeResourceCostPayment(
       state,
       player,
       requiredAmount,
-      requiredType,
+      requiredResources,
       requirePrinted,
       options,
       sourceCardInst,
@@ -788,29 +769,26 @@ export function executeResourceCostPayment(
   state: GameState,
   player: PlayerState,
   requiredAmount: number,
-  requiredType?: string,
+  requiredResources?: ResourceCost,
   requirePrinted: boolean = false,
   options?: AbilityPaymentOptions,
   sourceCardInst?: CardInstance,
   targetFaction?: string,
 ): ResourceCostPaymentResult {
-  let resourcesPaid = 0;
   let discardedCount = 0;
   const resourcesSpent: string[] = [];
+  const produced: string[] = [];
   const specifiedPaymentIds = options?.paymentCardInstanceIds || [];
   const specifiedGeneratorIds = options?.generatorInstanceIds || [];
+  const paidWith = (resources: readonly string[]) =>
+    countResourcesTowardCost(resources, requiredResources, requirePrinted);
 
   // 1. Process Generator Activations (Identity + Tableau)
   for (const gId of specifiedGeneratorIds) {
     if (gId === 'identity_ability' || gId === player.activeFormCard.code) {
-      const genAmt = getGeneratorProvidedResources(
-        state,
-        player,
-        gId,
-        requiredType,
-        requirePrinted,
-      );
-      resourcesPaid += genAmt;
+      const generated = listGeneratorResources(state, player, gId);
+      const genAmt = generated.length;
+      produced.push(...generated);
 
       const idAbility = player.activeFormCard.enrichment?.abilities?.find(
         (a) =>
@@ -859,14 +837,9 @@ export function executeResourceCostPayment(
       const gIdx = player.tableau.findIndex((c) => c.instanceId === gId);
       if (gIdx !== -1) {
         const gCard = player.tableau[gIdx];
-        const genAmt = getGeneratorProvidedResources(
-          state,
-          player,
-          gId,
-          requiredType,
-          requirePrinted,
-        );
-        resourcesPaid += genAmt;
+        const generated = listGeneratorResources(state, player, gId);
+        const genAmt = generated.length;
+        produced.push(...generated);
 
         gCard.exhausted = true;
         const enrichment = gCard.card.enrichment || getCardEnrichment(gCard.card.code);
@@ -970,28 +943,23 @@ export function executeResourceCostPayment(
           }
         }
 
-        const cardAmt = getCardProvidedResources(discarded, requiredType, requirePrinted);
-        resourcesPaid += cardAmt;
+        produced.push(...listCardResources(discarded));
       }
     }
   } else if (specifiedGeneratorIds.length === 0 && requiredAmount > 0) {
     // Auto-consume cards from hand until requiredAmount is satisfied
-    while (player.hand.length > 0 && resourcesPaid < requiredAmount) {
-      let cardIdx = -1;
-      for (let i = 0; i < player.hand.length; i++) {
-        if (sourceCardInst && player.hand[i].instanceId === sourceCardInst.instanceId) continue;
-        if (getCardProvidedResources(player.hand[i], requiredType, requirePrinted) > 0) {
-          cardIdx = i;
-          break;
-        }
-      }
+    while (paidWith(produced) < requiredAmount) {
+      const cardIdx = player.hand.findIndex(
+        (c) =>
+          c.instanceId !== sourceCardInst?.instanceId &&
+          paidWith([...produced, ...listCardResources(c)]) > paidWith(produced),
+      );
       if (cardIdx === -1) break;
 
       const [discarded] = player.hand.splice(cardIdx, 1);
       player.discard.push(discarded);
       discardedCount++;
-      const cardAmt = getCardProvidedResources(discarded, requiredType, requirePrinted);
-      resourcesPaid += cardAmt;
+      produced.push(...listCardResources(discarded));
       const res = discarded.card.resources;
       for (const type of ['physical', 'energy', 'mental', 'wild'] as const) {
         for (let i = 0; i < (res?.[type] || 0); i++) {
@@ -1001,7 +969,7 @@ export function executeResourceCostPayment(
     }
   }
 
-  return { state, resourcesPaid, discardedCount, resourcesSpent };
+  return { state, resourcesPaid: paidWith(produced), discardedCount, resourcesSpent };
 }
 
 /**

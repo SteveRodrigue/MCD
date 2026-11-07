@@ -9,12 +9,13 @@ describe('Global z-index scale (Issue #312)', () => {
       table: 0,
       content: 100,
       raised: 200,
-      zoom: 400,
+      lifted: 400,
       drawer: 600,
       modal: 700,
       banner: 800,
       menu: 900,
       critical: 1000,
+      zoom: 1100,
     });
   });
 

@@ -210,7 +210,7 @@ export const SupplementalEditorScreen: React.FC<SupplementalEditorScreenProps> =
             type="button"
             data-testid="toggle-sidebar-edge-btn"
             onClick={() => setIsSidebarCollapsed(false)}
-            className="absolute left-0 top-3 z-zoom bg-comic-yellow hover:bg-yellow-400 text-black p-1.5 border-2 border-l-0 border-black shadow-comic-xs cursor-pointer active:scale-95 transition-transform"
+            className="absolute left-0 top-3 z-lifted bg-comic-yellow hover:bg-yellow-400 text-black p-1.5 border-2 border-l-0 border-black shadow-comic-xs cursor-pointer active:scale-95 transition-transform"
             title="Expand Sidebar"
           >
             <PanelLeftOpen className="w-4 h-4" />

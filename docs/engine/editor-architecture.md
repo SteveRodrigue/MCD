@@ -137,7 +137,7 @@ Every card rendered on the active game board attaches a custom `onContextMenu` h
 1. **Trigger:** Right-clicking any `<CardView />` on the board (Player Hand, Tableau, Villain Zone, Main Scheme, Side Schemes, Attachment, Discard pile preview).
 2. **Portal Rendering & Auto-Zoom Immunity:**
    - Mounted directly into `document.body` via `ReactDOM.createPortal` with elevated layering (`z-[9999]`).
-   - Completely decoupled from tabletop card CSS transforms (`rotate-0`, `scale-[...]`, `-translate-y-4`) and hover-zoom transitions, ensuring exact fixed viewport coordinate positioning (`e.clientX`, `e.clientY`).
+   - Completely decoupled from tabletop card CSS transforms (`rotate-30`) and the hover zoom, ensuring exact fixed viewport coordinate positioning (`e.clientX`, `e.clientY`).
 3. **Context Menu Options:**
    - 🔍 **"Open in Supplemental Editor"**: Opens the standalone editor focused on the card in a new browser tab (`window.open('/editor?code=...', '_blank')`).
    - 📋 **"Copy Card Code"**: Copies the card's unique code (`01001a`) directly to the system clipboard.

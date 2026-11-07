@@ -48,7 +48,7 @@ However, when the parent container has `overflow-x: auto` or `overflow: hidden`,
 3. **Dynamic Inspection & Badge Overlays on Hover-Zoom (Issue #4):**
    * Physical card art captures only static printed card text. Cards that dynamically acquire traits (e.g. *Cosmic Flight* `01017` granting Captain Marvel the `[[Aerial]]` trait, or attachment traits) must clearly communicate their effective state to the player.
    * On hover-zoom, dynamically gained traits are rendered as high-contrast 1960s pop-art badge pills (`[✨ Aerial]`) positioned at the card header overlay.
-   * Badges scale seamlessly with the card container (`transform origin` and `--card-zoom-scale`) without triggering container clipping or stacking context collapse.
+   * Badges scale with the card, because the zoom is a scaled copy of the whole card.
 
 ---
 
@@ -65,7 +65,13 @@ However, when the parent container has `overflow-x: auto` or `overflow: hidden`,
 * **No Scrollbars:** Zero unwanted scrollbars or clipped card headers on hover.
 * **Smooth Tactile Feel:** Hovering a card smoothly projects it into the foreground over the board without layout shifts.
 * **Immediate State Clarity:** Players can visually confirm dynamic traits (e.g. Aerial form) on hover-zoom without opening modal inspection dialogs.
-* **Low Overhead:** Uses standard CSS3 transforms and unconstrained stacking contexts. Only a surface that must clip (a modal's scrolling body, the multi-hero seat track) wraps its cards in `CardZoomLayerContext`, which draws the zoom in a portal on `document.body`.
+* **Low Overhead:** Uses standard CSS3 transforms and unconstrained stacking contexts. Superseded by the addendum below.
 
 ### Negative / Tradeoffs:
 * On extremely small mobile viewports with large hands (>8 cards), cards must wrap or flex with minimal overlap rather than relying on native container scrollbars.
+
+---
+
+## Addendum 2026-11-06 ([Issue #653](https://github.com/SteveRodrigue/MCD/issues/653))
+
+The zoom no longer rises over the hovered card. The inline elevation collided with the Villain Phase banner, covered neighbouring cards and moved cards under the pointer. Every zoom is now one upright copy pinned to the top right corner of the viewport, in a body-level portal that ignores the pointer. The hovered card keeps its size, position and rotation. Decision items 1 and 2 above no longer apply. Item 3 stands: the copy shows dynamic traits and tokens. Layering is in [ADR-0082](0082-ui-z-index-scale-and-fan-pattern.md).

@@ -231,17 +231,11 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
   return (
     <div className="flex-1 flex flex-col md:flex-row h-full overflow-visible bg-comic-paper">
       {/* LEFT / CENTER COLUMN: Card Visual Preview & Printed Text */}
-      <div className="w-full md:w-[320px] lg:w-[340px] shrink-0 border-r-4 border-black flex flex-col items-center bg-[#fbf9f4] relative z-raised hover:z-zoom focus-within:z-zoom overflow-visible">
-        {/* Card View Visual Preview (ADR-0012 Unconstrained Z-Axis Elevation) */}
-        <div className="p-4 pb-2 flex flex-col items-center relative z-zoom overflow-visible">
+      <div className="w-full md:w-[320px] lg:w-[340px] shrink-0 border-r-4 border-black flex flex-col items-center bg-[#fbf9f4] relative z-raised overflow-visible">
+        {/* Card View Visual Preview */}
+        <div className="p-4 pb-2 flex flex-col items-center relative overflow-visible">
           <div className="shadow-comic-lg border-2 border-black rounded-lg bg-black p-1 overflow-visible">
-            <CardView
-              card={normalizedCard}
-              size="lg"
-              enableHoverZoom={true}
-              zoomOrigin="center"
-              officialArtOnly
-            />
+            <CardView card={normalizedCard} size="lg" enableHoverZoom={true} officialArtOnly />
           </div>
           <span className="text-[11px] font-comic font-bold text-gray-500 mt-2">
             Hover over card to magnify

@@ -233,7 +233,7 @@ describe('VillainZone Compact Tri-Column Layout', () => {
 
     renderVillainZone(villainWithAtt);
 
-    // 1. Stats and HP columns have relative z-content so they sit above the villain fan at rest; the fan raises itself to z-zoom when hovered (Issue #312)
+    // 1. Stats and HP columns have relative z-content so they sit above the villain fan at rest; the fan raises itself to z-lifted when hovered (Issue #312)
     const statsColumn = screen.getByTestId('villain-stats-column');
     expect(statsColumn.className).toContain('relative');
     expect(statsColumn.className).toContain('z-content');

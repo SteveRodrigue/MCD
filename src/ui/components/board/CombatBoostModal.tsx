@@ -116,7 +116,6 @@ export const CombatBoostModal: React.FC<CombatBoostModalProps> = ({
                       size="md"
                       showTokens={false}
                       enableHoverZoom={false}
-                      enableHoverLift={false}
                       enableContextMenu={false}
                     />
                     <BoostIconsPill icons={icons} star={hasStar} />

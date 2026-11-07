@@ -242,16 +242,16 @@ We use [Conventional Commits](https://www.conventionalcommits.org/). Scopes: `en
 
 ---
 
-## 11. UI Layering, Stacking Contexts & Z-Axis Zoom Standards
+## 11. UI Layering, Stacking Contexts & Card Hover Zoom
 
-1. **Unconstrained Z-Axis Elevation for Interactive Elements:**
-   - Interactive card containers (such as `PlayerHandTray` and tabletop zones) must maintain `overflow-visible` so elevated/hovered elements can project into the 3D Z-axis without triggering clipping boundaries or scrollbar spawning.
-   - Never place `overflow-x: auto` or `overflow: hidden` on a container whose child elements perform scale transforms on hover (`hover:scale-[1.85]`). A surface that must clip or dim (a modal body, the multi-hero seat track) wraps its cards in `CardZoomLayerContext`, so their zoom draws in a portal on `document.body`.
-   - An inline hover zoom grows with a transition and returns at once (`duration-0 hover:duration-200`): its raised z-index ends when the pointer leaves, so a card still shrinking would fall behind its neighbours.
+1. **One Card Hover Zoom (ADR-0082):**
+   - Every card hover zoom is `CardHoverZoom` (`src/ui/components/cards/CardView.tsx`): an upright copy in a portal on `document.body`, pinned to the top right corner, above every layer, with `pointer-events: none`. `CardView` shows it on hover unless `enableHoverZoom={false}`. A thumbnail or other card picture shows it directly. Never build a second zoom.
+   - A hovered card never changes shape: no hover scale, translate or rotate on the card or its wrappers. A highlight such as an outline or a shadow is fine.
+   - Cards with hanging attachments keep `overflow-visible` on their zone so the attachment fan is not clipped.
 2. **Layering (Z-Index) Hierarchy (ADR-0082):**
-   - Use only the named scale from `src/ui/styles/z-layers.ts` (`z-table` 0, `z-content` 100, `z-raised` 200, `z-zoom` 400, `z-drawer` 600, `z-modal` 700, `z-banner` 800, `z-menu` 900, `z-critical` 1000). Numeric or arbitrary z classes and numeric `zIndex` literals fail `tests/ui/z-literal-guard.test.ts`.
+   - Use only the named scale from `src/ui/styles/z-layers.ts` (`z-table` 0, `z-content` 100, `z-raised` 200, `z-lifted` 400, `z-drawer` 600, `z-modal` 700, `z-banner` 800, `z-menu` 900, `z-critical` 1000, `z-zoom` 1100). Numeric or arbitrary z classes and numeric `zIndex` literals fail `tests/ui/z-literal-guard.test.ts`.
    - Every modal, drawer or banner renders through `ModalLayer` (portal to `document.body`), never inline.
-   - Fans are `isolate`d, raise themselves with `hover:z-zoom focus-within:z-zoom`, and compute card z with `getFanZIndex` (`src/ui/components/cards/fan-z.ts`). Never derive fan z from a fixed constant.
+   - Fans are `isolate`d, raise themselves with `hover:z-lifted focus-within:z-lifted`, and compute card z with `getFanZIndex` (`src/ui/components/cards/fan-z.ts`). Never derive fan z from a fixed constant.
    - Do not put `overflow-x-hidden` / `overflow-*-auto` on the App or GameBoard roots (they would become scroll containers); use `overflow-x-clip`.
    - Full ladder and fan rules: [ADR-0082, Appendix A](../decisions/0082-ui-z-index-scale-and-fan-pattern.md#appendix-a-layer-map).
 

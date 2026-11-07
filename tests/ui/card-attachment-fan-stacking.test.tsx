@@ -45,8 +45,8 @@ describe('CardAttachmentFan local stacking (Issue #312)', () => {
 
     const outer = container.firstElementChild as HTMLElement;
     expect(outer.className).toContain('isolate');
-    expect(outer.className).toContain('hover:z-zoom');
-    expect(outer.className).toContain('focus-within:z-zoom');
+    expect(outer.className).toContain('hover:z-lifted');
+    expect(outer.className).toContain('focus-within:z-lifted');
 
     const host = outer.firstElementChild as HTMLElement;
     const hostZ = z(host);

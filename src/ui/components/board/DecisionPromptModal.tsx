@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { CheckCircle2, XCircle, ArrowRight, Zap, ShieldAlert, Swords, Shield } from 'lucide-react';
 import { PendingDecisionPrompt, PlayerState } from '../../../engine/models';
 import { cardCatalog } from '../../../data/importer/card-loader';
-import { CardView } from '../cards/CardView';
+import { CardHoverZoom, CardView } from '../cards/CardView';
 import { PromptCardPanel } from './PromptCardPanel';
 import { CardArtThumbnail } from '../cards/CardArtThumbnail';
 import { FormattedCardText } from '../cards/FormattedCardText';
@@ -31,7 +31,6 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
 }) => {
   const { style } = useModalStyle();
   const gameSession = useOptionalGameSession();
-  const [hoveredCardId, setHoveredCardId] = useState<string | null>(null);
   const [hoveredOptionCardId, setHoveredOptionCardId] = useState<string | null>(null);
 
   const effectivePlayers = propsPlayers ?? gameSession?.state.players;
@@ -398,26 +397,21 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
 
             <div className="flex flex-wrap justify-center items-center gap-3 pt-1 overflow-visible">
               {prompt.revealedCards.map((rc) => {
-                const isHovered = hoveredCardId === rc.instanceId;
                 return (
                   <div
                     key={rc.instanceId}
-                    onMouseEnter={() => setHoveredCardId(rc.instanceId)}
-                    onMouseLeave={() => setHoveredCardId(null)}
                     onClick={() => {
                       if (rc.isSelectable && rc.selectableOptionId) {
                         onSelectOption(rc.selectableOptionId);
                       }
                     }}
-                    className={`flex flex-col items-center gap-1.5 transition-all relative ${
-                      isHovered ? 'z-zoom' : 'z-content'
-                    } ${
+                    className={`flex flex-col items-center gap-1.5 transition-all relative z-content ${
                       rc.isSelectable
-                        ? 'cursor-pointer hover:scale-105 filter drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)] ring-2 ring-emerald-500 rounded-xl p-0.5'
+                        ? 'cursor-pointer filter drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)] ring-2 ring-emerald-500 rounded-xl p-0.5'
                         : 'filter grayscale brightness-90 contrast-95 ring-2 ring-slate-400/80 rounded-xl p-0.5 cursor-default'
                     }`}
                   >
-                    <CardView card={rc.card} size="sm" enableHoverZoom={true} zoomOrigin="center" />
+                    <CardView card={rc.card} size="sm" enableHoverZoom={true} />
                     <span
                       className={`text-nano px-2 py-0.5 rounded border border-comic-black font-black uppercase shadow-2xs ${
                         rc.isSelectable
@@ -544,7 +538,7 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                     {optionCardCode ? (
                       <div
                         data-testid={`option-card-thumbnail-${option.id}`}
-                        className="relative shrink-0 group/thumb"
+                        className="relative shrink-0"
                         onMouseEnter={() => setHoveredOptionCardId(option.id)}
                         onMouseLeave={() => setHoveredOptionCardId(null)}
                       >
@@ -554,12 +548,7 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                           size="sm"
                         />
                         {optionCard && hoveredOptionCardId === option.id && (
-                          <div
-                            data-testid={`card-hover-preview-${optionCard.code}`}
-                            className="absolute left-12 top-1/2 -translate-y-1/2 z-raised drop-shadow-2xl animate-in fade-in duration-150 pointer-events-none"
-                          >
-                            <CardView card={optionCard} size="sm" enableHoverZoom={true} />
-                          </div>
+                          <CardHoverZoom card={optionCard} />
                         )}
                       </div>
                     ) : option.icon === 'punch' || option.id === 'undefended' ? (

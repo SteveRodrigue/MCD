@@ -68,7 +68,7 @@ Within a modal, each fact is written once: the question is the dialog title (no 
 ## Modal types
 
 1. **Decision**: forced or optional prompt. Trigger card in the header, threat showcase, one option row per choice, each with its card thumbnail.
-2. **Sequence** (Issue #358): reorder real card faces with Left/Right buttons below each card (clear of hover-zoom), drag-and-drop, step badges, finisher tag.
+2. **Sequence** (Issue #358): reorder real card faces with Left/Right buttons below each card, drag-and-drop, step badges, finisher tag.
 3. **Select**: pick N of M cards from a grid with a live counter; confirm only for a valid count.
 
 The **Modals** kit also previews every other real game modal, in three groups (`ModalPreviews.tsx` feeds each one sample data; `lab-state.ts` builds a real Rhino game for the ones that read the game session):

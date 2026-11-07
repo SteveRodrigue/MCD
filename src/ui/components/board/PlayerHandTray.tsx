@@ -64,7 +64,6 @@ const HandCard = React.memo(function HandCard({
       isPlayable={isPlayable}
       unplayableReason={unplayableReason}
       enableHoverZoom={true}
-      zoomOrigin="bottom"
       onClick={handleClick}
     />
   );
@@ -498,7 +497,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
             <div
               ref={handFanRef}
               data-testid="hand-fan-row"
-              className="relative isolate hover:z-zoom focus-within:z-zoom flex items-center justify-start overflow-visible px-1 min-h-[184px] w-full"
+              className="relative isolate flex items-center justify-start overflow-visible px-1 min-h-[184px] w-full"
             >
               {hand.map((cardInst, index) => {
                 const isHovered = hoveredHandCardId === cardInst.instanceId;
@@ -517,9 +516,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
                       zIndex: getFanZIndex(hand.length, index, isHovered),
                       marginLeft: index === 0 ? 0 : `${handOverlapMargin}px`,
                     }}
-                    className={`shrink-0 relative flex transition-transform duration-150 ease-out cursor-pointer ${
-                      isHovered ? '-translate-y-8' : 'hover:-translate-y-2'
-                    }`}
+                    className="shrink-0 relative flex cursor-pointer"
                   >
                     <HandCard
                       cardInst={cardInst}

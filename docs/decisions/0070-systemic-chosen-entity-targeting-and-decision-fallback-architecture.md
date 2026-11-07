@@ -77,3 +77,9 @@ Updated [`src/ui/components/board/CardPaymentModal.tsx`](../../src/ui/components
 - **Positive:** Issue #146 is resolved structurally; First Aid and all future heal/ready/target cards provide multi-target options seamlessly.
 - **Positive:** Unfiltered targeting is fully preserved for cards that do not require state predicates.
 - **Positive:** Headless test coverage is comprehensive across candidate discovery, legality gating, auto-binding, multi-choice prompt resolution, and minion/villain restrictions.
+
+## Addendum (2026-11-06): The player makes the choice (Issue #645)
+
+- The target picker sits directly under the card and its cost banners, above the resources, so it is never out of view while paying.
+- With two or more valid targets, none is preselected and the modal cannot confirm until the player picks one (RR v1.8 "Choose (Game Element)"). A single valid target stays selected.
+- The decision prompt fallback is unchanged for a `PLAY_CARD` dispatched without a target.

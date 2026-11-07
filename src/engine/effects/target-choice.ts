@@ -231,19 +231,17 @@ export function targetChoiceOptions(
 }
 
 /**
- * `describeTarget` for one target of a choice: minions that share a name also say which hero they
- * are engaged with, so the player can tell them apart (Ultron's Drones).
+ * `describeTarget` for one target of a choice: in a choice of two or more minions, each also says
+ * which hero it is engaged with, so the player can tell them apart (Ultron's Drones).
  */
-function describeTargetAmong(
+export function describeTargetAmong(
   target: ResolvedTarget,
   targets: readonly ResolvedTarget[],
 ): { label: string; cardCode?: string } {
   const described = describeTarget(target);
   const isMinion = (t: ResolvedTarget) => t.kind === 'character' && t.entityType === 'minion';
-  const sharesName =
-    isMinion(target) &&
-    targets.filter((t) => isMinion(t) && describeTarget(t).label === described.label).length > 1;
-  if (!sharesName || target.kind !== 'character' || !target.player) return described;
+  if (!isMinion(target) || targets.filter(isMinion).length < 2) return described;
+  if (target.kind !== 'character' || !target.player) return described;
   const engagedHero = target.player.hero?.name || target.player.name;
   return { ...described, label: `${described.label} (engaged with ${engagedHero})` };
 }

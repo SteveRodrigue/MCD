@@ -44,8 +44,12 @@ export interface PackLoadFailure {
   blockedBy?: string;
 }
 
-/** What a player sees for a pack on disk (Q45). `data-only`: cards but no supplemental data, or not enabled. */
-export type PackState = 'playable' | 'data-only' | 'needs-pack' | 'failed';
+/**
+ * What a player sees for a pack on disk, whether it is on or off (Q45, #649). `playable`: every card
+ * has supplemental data, or the pack has no cards. `incomplete`: some cards do.
+ * `no-supplemental`: none does, so the Content screen will not switch it on.
+ */
+export type PackState = 'playable' | 'incomplete' | 'no-supplemental' | 'needs-pack' | 'failed';
 
 export interface PackDescription {
   id: string;
@@ -55,8 +59,14 @@ export interface PackDescription {
   enabled: boolean;
   state: PackState;
   reason?: string;
+  /** Counted when the pack is loaded or has supplemental files; otherwise 0, so booting reads no card file. */
   cardCount: number;
+  /** Counted under the same condition as `cardCount`. */
   supplementalCount: number;
+  /** PNG files in the pack's `assets/cards/` and in the art cache. Art packs do not count. */
+  imageCount: number;
+  /** Says so when the pack's cards have no image on disk. Never affects `state` or the switch. */
+  imageNote?: string;
   /** Scenarios of a pack that is not loaded, so the setup screen can list them as locked. */
   lockedScenarios: { id: string; name: string }[];
 }

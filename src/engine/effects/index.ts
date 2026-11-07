@@ -1130,11 +1130,22 @@ function logStepError(
 }
 
 /**
+ * A step of a sequence that spans several cards (Wakanda Forever!): it names the card it resolves
+ * for and whether it is the sequence's final step. With `ability`, the step stands for that whole
+ * ability, which resolves with its own labels and cost.
+ */
+export interface SequenceStep extends AbilityStep {
+  sourceCardInstance?: CardInstance;
+  isFinalStep?: boolean;
+  ability?: CardAbility;
+}
+
+/**
  * Executes a declarative sequence of sub-action steps.
  */
 export function executeSequence(
   state: GameState,
-  steps: AbilityStep[],
+  steps: SequenceStep[],
   context: EffectExecutionContext,
   resumeState?: {
     prevResult?: StepResolutionResult;
@@ -1190,14 +1201,10 @@ export function executeSequence(
 
     const isDistinctFromPrevious = effectParams.distinctFrom === 'PREVIOUS_TARGET';
 
-    const stepExt = step as AbilityStep & {
-      sourceCardInstance?: CardInstance;
-      isFinalStep?: boolean;
-    };
     const stepContext: EffectExecutionContext = {
       ...context,
-      sourceCardInstance: stepExt.sourceCardInstance ?? context.sourceCardInstance,
-      isFinalStep: stepExt.isFinalStep ?? (i === steps.length - 1 ? context.isFinalStep : false),
+      sourceCardInstance: step.sourceCardInstance ?? context.sourceCardInstance,
+      isFinalStep: step.isFinalStep ?? (i === steps.length - 1 ? context.isFinalStep : false),
       previousResult: lastExecutedResult,
       distinctFromId: isDistinctFromPrevious
         ? lastExecutedResult?.targetId || context.chosenTargetInstanceId
@@ -1210,7 +1217,10 @@ export function executeSequence(
     };
 
     const promptsBefore = currentState.pendingDecisionQueue?.length ?? 0;
-    const res = executeStep(currentState, normalizedStep, stepContext);
+    // An ability runs on its own copy of the context: its attack or thwart is not the next one's.
+    const res = step.ability
+      ? executeEffect(currentState, step.ability, { ...stepContext })
+      : executeStep(currentState, normalizedStep, stepContext);
     currentState = res.state;
     if (currentState.winner) {
       break;

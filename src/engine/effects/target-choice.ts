@@ -218,25 +218,8 @@ export function targetChoiceOptions(
   effect: 'EVENT_CHOSEN_TARGET' | 'ABILITY_CHOSEN_TARGET',
   params: Record<string, unknown>,
 ): DecisionPromptOption[] {
-  const minionNameCounts = new Map<string, number>();
-  for (const t of targets) {
-    if (t.kind === 'character' && t.entityType === 'minion') {
-      const name = (t.entity as CardInstance).card?.name ?? 'Minion';
-      minionNameCounts.set(name, (minionNameCounts.get(name) || 0) + 1);
-    }
-  }
-
   return targets.map((target) => {
-    let { label, cardCode } = describeTarget(target);
-    if (
-      target.kind === 'character' &&
-      target.entityType === 'minion' &&
-      target.player &&
-      (minionNameCounts.get(label) || 0) > 1
-    ) {
-      const engagedHero = target.player.hero?.name || target.player.name;
-      label = `${label} (engaged with ${engagedHero})`;
-    }
+    const { label, cardCode } = describeTargetAmong(target, targets);
     return {
       id: target.id,
       label,
@@ -246,6 +229,22 @@ export function targetChoiceOptions(
       params,
     };
   });
+}
+
+/**
+ * `describeTarget` for one target of a choice: in a choice of two or more minions, each also says
+ * which hero it is engaged with, so the player can tell them apart (Ultron's Drones).
+ */
+export function describeTargetAmong(
+  target: ResolvedTarget,
+  targets: readonly ResolvedTarget[],
+): { label: string; cardCode?: string } {
+  const described = describeTarget(target);
+  const isMinion = (t: ResolvedTarget) => t.kind === 'character' && t.entityType === 'minion';
+  if (!isMinion(target) || targets.filter(isMinion).length < 2) return described;
+  if (target.kind !== 'character' || !target.player) return described;
+  const engagedHero = target.player.hero?.name || target.player.name;
+  return { ...described, label: `${described.label} (engaged with ${engagedHero})` };
 }
 
 /** Whether `id` names the target: its id, or for the main scheme also `main_scheme` or its card code. */
@@ -273,21 +272,26 @@ const isExhausted = (target: ResolvedTarget): boolean =>
  * any part of the ability can affect it; ADR-0090). Add a rule here for a new effect; no caller
  * decides this by effect name.
  */
+const canTakeDamage: AffectRule = (state, _step, target, sourceCard, actor, ability) =>
+  !(target.kind === 'character' && isImmuneToDamage(state, target.entity, sourceCard)) &&
+  !(
+    target.kind === 'character' &&
+    target.entityType === 'villain' &&
+    ability?.labels?.includes('ATTACK') &&
+    isVillainAttackBlockedByGuard(actor)
+  );
+
 const AFFECT_RULES: Partial<Record<EffectType, AffectRule>> = {
   // A character that cannot take damage (from this source) is not a valid target of an ability
   // whose only effect is damage (#297).
   // The villain is also not a valid target of an attack while a Guard minion is engaged with the
   // actor (RR v1.8 "Guard"; #331). Damage that is not an attack is not limited.
-  DEAL_DAMAGE: (state, _step, target, sourceCard, actor, ability) =>
-    !(target.kind === 'character' && isImmuneToDamage(state, target.entity, sourceCard)) &&
-    !(
-      target.kind === 'character' &&
-      target.entityType === 'villain' &&
-      ability?.labels?.includes('ATTACK') &&
-      isVillainAttackBlockedByGuard(actor)
-    ),
-  TRANSFER_DAMAGE: (state, _step, target, sourceCard) =>
-    !(target.kind === 'character' && isImmuneToDamage(state, target.entity, sourceCard)),
+  DEAL_DAMAGE: canTakeDamage,
+  // Moved damage is dealt to the target, so the same rule applies. A hero without damage is no
+  // valid source, so the move cannot be made (RR v1.8 "Move"; #300).
+  TRANSFER_DAMAGE: (state, step, target, sourceCard, actor, ability) =>
+    actor.health < getEffectiveMaxHealth(actor, state) &&
+    canTakeDamage(state, step, target, sourceCard, actor, ability),
   ADD_STATUS: (state, step, target) => {
     if (target.kind !== 'character') return false;
     const entity = target.entity;
@@ -668,7 +672,7 @@ export function chooseStepTarget(
       ? 'an Enemy'
       : 'a Target';
   const options: DecisionPromptOption[] = valid.map((target) => {
-    const { label, cardCode } = describeTarget(target);
+    const { label, cardCode } = describeTargetAmong(target, valid);
     return {
       id: target.id,
       label,
@@ -779,6 +783,7 @@ const NO_VALID_TARGET_REASON: Partial<Record<EffectType, string>> = {
   REMOVE_THREAT: 'No scheme has threat to remove.',
   ADD_STATUS: 'No character can receive that status card.',
   DEAL_DAMAGE: 'No character can take that damage.',
+  TRANSFER_DAMAGE: 'No damage can be moved to an enemy.',
   REMOVE_STATUS: 'No character has that status card.',
   ADD_THREAT: 'That scheme is not in play.',
   ADD_TRAIT: 'Your identity already has that trait.',
@@ -841,7 +846,9 @@ export function checkAbilityTargets(
   );
   if (!unmet) return { allowed: true };
   const isGuarded =
-    unmet[0].effect === 'DEAL_DAMAGE' &&
+    (unmet[0].effect === 'DEAL_DAMAGE' ||
+      (unmet[0].effect === 'TRANSFER_DAMAGE' &&
+        player.health < getEffectiveMaxHealth(player, state))) &&
     ability.labels?.includes('ATTACK') &&
     isVillainAttackBlockedByGuard(player);
   return {

@@ -278,7 +278,7 @@ describe('Editor UI Contrast & Layout Ergonomics (Issue #116)', () => {
     expect(previewCol).toBeDefined();
     expect(previewCol?.classList.contains('overflow-y-auto')).toBe(false);
     expect(previewCol?.classList.contains('overflow-visible')).toBe(true);
-    expect(previewCol?.classList.contains('hover:z-zoom')).toBe(true);
+    expect(previewCol?.classList.contains('hover:z-lifted')).toBe(false);
   });
   it('keeps the editor workspace above the header and unclipped so hover-zoom is not hidden behind the menu bar', async () => {
     await act(async () => {

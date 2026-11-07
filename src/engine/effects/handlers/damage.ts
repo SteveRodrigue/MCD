@@ -17,7 +17,7 @@ import { enqueueDistributionPrompt } from '../../pipeline/prompt-queue';
 import { isImmuneToDamage } from '../../pipeline/damage-immunity';
 import { getEffectiveMaxHealth } from '../../pipeline/stat-calculator';
 import { nextEngineId } from '../../state/rng';
-import { resolveCharacterTargets } from '../target-resolver';
+import { resolveCharacterTargets, resolveEntityByInstanceId } from '../target-resolver';
 import { applyDistributedAmounts } from '../distribution';
 import { appendLog } from '../../state/game-log';
 import {
@@ -660,14 +660,14 @@ function handleTransferDamage(
     amount += params.finisherBonus || 0;
   }
 
-  const targetEnemyId = targetInstanceId;
+  // The enemy the player chose; never a guess (ADR-0077).
+  const enemy = resolveEntityByInstanceId(state, targetInstanceId);
+  if (enemy?.kind !== 'character' || !['villain', 'minion'].includes(enemy.entityType)) {
+    return { state, success: false, error: 'TRANSFER_DAMAGE needs a chosen enemy' };
+  }
+  const enemyEntity = enemy.entity as CardInstance | VillainState;
   // A character that cannot take this damage is not a valid target: nothing moves (#297).
-  const transferTarget = targetEnemyId
-    ? targetEnemyId === 'villain'
-      ? getActiveVillain(state)
-      : state.players.flatMap((p) => p.engagedMinions).find((m) => m.instanceId === targetEnemyId)
-    : getActiveVillain(state);
-  if (isImmuneToDamage(state, transferTarget, context.sourceCardInstance)) {
+  if (isImmuneToDamage(state, enemyEntity, context.sourceCardInstance)) {
     return { state, success: false, error: 'Target cannot take damage from this source' };
   }
   // Damage can only move if the hero carries it (#300). With no damage there is no valid
@@ -686,10 +686,7 @@ function handleTransferDamage(
       actor: player.name,
       source: context.sourceCardInstance?.card.name || player.activeFormCard?.name || 'Ability',
       amount,
-      target:
-        transferTarget?.card?.name ||
-        (transferTarget as { name?: string } | undefined)?.name ||
-        'Enemy',
+      target: enemyEntity.card.name,
     },
   });
 
@@ -704,27 +701,17 @@ function handleTransferDamage(
     hasPiercing: false,
     triggerChain: context.triggerChain,
   };
-  let targetMinionOwner: PlayerState | undefined;
-  let targetMinion: CardInstance | undefined;
-  if (targetEnemyId && targetEnemyId !== 'villain') {
-    for (const p of state.players) {
-      targetMinion = p.engagedMinions.find((m) => m.instanceId === targetEnemyId);
-      if (targetMinion) {
-        targetMinionOwner = p;
-        break;
-      }
-    }
-  }
-  if (targetMinion && targetMinionOwner) {
+  if (enemy.entityType === 'minion') {
+    const minion = enemy.entity as CardInstance;
     state = applyAbilityDamage(
       state,
-      minionTargetRef(targetMinion, targetMinionOwner.id),
+      minionTargetRef(minion, enemy.player!.id),
       amount,
       damageOpts,
     ).state;
-    recordAttackedEnemy(context, 'minion', targetMinion.instanceId);
+    recordAttackedEnemy(context, 'minion', minion.instanceId);
   } else {
-    const villain = getActiveVillain(state);
+    const villain = enemy.entity as VillainState;
     state = applyAbilityDamage(state, villainTargetRef(villain), amount, damageOpts).state;
     recordAttackedEnemy(context, 'villain', villain.instanceId || 'villain');
   }

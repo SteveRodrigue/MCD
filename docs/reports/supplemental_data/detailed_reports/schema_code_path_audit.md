@@ -107,7 +107,7 @@ This matrix audits every schema primitive defined in `src/data/supplemental/sche
 | `VILLAIN` | ✅ Yes | **31** | 🟢 Active | Handled in `src/engine/effects/target-resolver.ts`; declared by 31 card(s). |
 | `MAIN_SCHEME` | ✅ Yes | **5** | 🟢 Active | Handled in `src/engine/effects/target-resolver.ts`; declared by 5 card(s). |
 | `CHOSEN_SCHEME` | ✅ Yes | **11** | 🟢 Active | Handled in `src/engine/effects/target-resolver.ts`; declared by 11 card(s). |
-| `CHOSEN_ENEMY` | ✅ Yes | **16** | 🟢 Active | Handled in `src/engine/effects/target-resolver.ts`; declared by 16 card(s). |
+| `CHOSEN_ENEMY` | ✅ Yes | **17** | 🟢 Active | Handled in `src/engine/effects/target-resolver.ts`; declared by 17 card(s). |
 | `ALL_ENEMIES` | ✅ Yes | **3** | 🟢 Active | Handled in `src/engine/effects/target-resolver.ts`; declared by 3 card(s). |
 | `ENGAGED_ENEMIES` | ✅ Yes | **2** | 🟢 Active | Handled in `src/engine/effects/target-resolver.ts`; declared by 2 card(s). |
 | `ENGAGED_MINIONS` | ✅ Yes | **0** | 🔵 Engine-Ready | Handled in `src/engine/effects/target-resolver.ts`; 0 cards currently declare this. |

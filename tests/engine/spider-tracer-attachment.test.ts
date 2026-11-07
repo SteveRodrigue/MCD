@@ -127,6 +127,40 @@ describe('Spider-Tracer & Engaged Minion Attachment Engine Invariants (Issue #13
     expect(directLog.params?.host).toContain(minionB.card.name);
   });
 
+  it("Scenario 1 (#645): the attachment prompt names each minion's engaged hero, with no nested seat name", () => {
+    const seated = thaw(state);
+    seated.players[0].name = 'Hero Seat 1 (Spider-Man)';
+    seated.players[1].name = 'Hero Seat 2 (Captain Marvel)';
+    const minionA = createCardInstance(cardCatalog.getCard('01101')!);
+    const minionB = createCardInstance(cardCatalog.getCard('01101')!);
+    seated.players[0].engagedMinions = [minionA];
+    seated.players[1].engagedMinions = [minionB];
+    const tracer = createCardInstance(cardCatalog.getCard('01007')!);
+    const payment = createCardInstance(cardCatalog.getCard('01005')!);
+    seated.players[0].hand = [tracer, payment];
+
+    const played = dispatchAction(seated, {
+      type: 'PLAY_CARD',
+      playerId: 'p1',
+      cardInstanceId: tracer.instanceId,
+      paymentCardInstanceIds: [payment.instanceId],
+    });
+
+    const prompt = peekDecisionPrompt(played.state)!;
+    expect(prompt.options.map((o) => o.label)).toEqual([
+      `${minionA.card.name} (engaged with Spider-Man)`,
+      `${minionB.card.name} (engaged with Captain Marvel)`,
+    ]);
+
+    const resolved = dispatchAction(played.state, {
+      type: 'RESOLVE_DECISION_PROMPT',
+      playerId: 'p1',
+      selectedOptionId: minionB.instanceId,
+    });
+    const log = resolved.state.log.find((l) => l.key === 'card.attached.to_host');
+    expect(log?.params?.host).toBe(`${minionB.card.name} (engaged with Captain Marvel)`);
+  });
+
   it('Test 2: Attaches to minion engaged on another player only (tablewide minion legality satisfied)', () => {
     // P1 has 0 minions; P2 has 1 minion
     const minionC = createCardInstance(cardCatalog.getCard('01101')!);

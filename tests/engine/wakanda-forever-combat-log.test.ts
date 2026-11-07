@@ -72,7 +72,7 @@ describe('Wakanda Forever! combat log (#398)', () => {
       createCardInstance(cardCatalog.getCard(code)!),
     );
     blackPanther.tableau = upgrades;
-    state.players[0].engagedMinions = [createCardInstance(cardCatalog.getCard('01096')!)];
+    state.players[0].engagedMinions = [createCardInstance(cardCatalog.getCard('01130')!)];
     logStart = state.log.length;
   });
 

@@ -4,12 +4,13 @@ export const Z = {
   table: 0,
   content: 100,
   raised: 200,
-  zoom: 400,
+  lifted: 400,
   drawer: 600,
   modal: 700,
   banner: 800,
   menu: 900,
   critical: 1000,
+  zoom: 1100,
 } as const;
 
 export type ZLayer = keyof typeof Z;
@@ -19,10 +20,11 @@ export const Z_CLASS: Record<ZLayer, string> = {
   table: 'z-table',
   content: 'z-content',
   raised: 'z-raised',
-  zoom: 'z-zoom',
+  lifted: 'z-lifted',
   drawer: 'z-drawer',
   modal: 'z-modal',
   banner: 'z-banner',
   menu: 'z-menu',
   critical: 'z-critical',
+  zoom: 'z-zoom',
 };

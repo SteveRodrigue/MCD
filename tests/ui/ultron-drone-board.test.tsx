@@ -57,8 +57,8 @@ describe('Drone minion on the board', () => {
     expect(container.innerHTML).not.toContain('Swinging Web Kick');
   });
 
-  // #619 S1: the seat strip scrolls sideways, so it clips whatever rises above it.
-  it('floats a hovered Drone above the seat strip in a two-hero game', () => {
+  // The seat strip scrolls sideways and clips, so the zoom must live outside it.
+  it('shows a hovered Drone in the corner zoom, outside the seat strip, in a two-hero game', () => {
     const state = ultronGame(2);
 
     const { container } = render(
@@ -74,24 +74,5 @@ describe('Drone minion on the board', () => {
     const zoom = document.body.querySelector('[data-card-zoom-layer="ultron_drone"]');
     expect(zoom).not.toBeNull();
     expect(container.contains(zoom)).toBe(false);
-  });
-
-  // #619 S2: its fan drops to the table the moment the pointer leaves, so a card still shrinking
-  // would fall behind the Drones next to it.
-  it('puts a Drone back in its slot at once when the pointer leaves it', () => {
-    const state = ultronGame();
-
-    render(
-      <GameSettingsProvider>
-        <TestSession state={state}>
-          <HeroZone player={state.players[0]} seatNumber={1} isFocused={true} isMultiHero={false} />
-        </TestSession>
-      </GameSettingsProvider>,
-    );
-
-    const face = screen.getByTestId('threat-zone-minions').querySelector(DRONE)!.firstElementChild!;
-    expect(face.className).toContain('group-hover:scale-(--card-zoom-scale)');
-    expect(face.className.split(' ')).toContain('duration-0');
-    expect(face.className).toContain('group-hover:duration-200');
   });
 });

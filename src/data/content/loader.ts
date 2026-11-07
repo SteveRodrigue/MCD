@@ -19,6 +19,7 @@ import type {
   LoadedPack,
   PackDescription,
   PackLoadFailure,
+  PackState,
 } from './types';
 
 const CONTENT_FAILURE_ID = '(content)';
@@ -361,10 +362,88 @@ async function readLockedScenarios(
   return found;
 }
 
+const NO_SUPPLEMENTAL_REASON = 'no supplemental data';
+
+interface PackStatus {
+  state: PackState;
+  reason?: string;
+  cardCount: number;
+  supplementalCount: number;
+  hasCards: boolean;
+}
+
+function failedStatus(reason: string, blocked: boolean): PackStatus {
+  return {
+    state: blocked ? 'needs-pack' : 'failed',
+    reason,
+    cardCount: 0,
+    supplementalCount: 0,
+    hasCards: false,
+  };
+}
+
+/** The status a pack's cards and supplemental data give it, loaded or not. */
+function supplementalStatus(
+  cards: RawUpstreamCard[],
+  supplemental: Record<string, CardEnrichment>,
+): PackStatus {
+  const covered = cards.filter((card) => supplemental[card.code] !== undefined).length;
+  const counts = {
+    cardCount: cards.length,
+    supplementalCount: Object.keys(supplemental).length,
+    hasCards: cards.length > 0,
+  };
+  if (covered === cards.length) return { state: 'playable', ...counts };
+  if (covered === 0) {
+    return { state: 'no-supplemental', reason: NO_SUPPLEMENTAL_REASON, ...counts };
+  }
+  return {
+    state: 'incomplete',
+    reason: `${covered} of ${cards.length} cards have supplemental data`,
+    ...counts,
+  };
+}
+
+/**
+ * The status of a pack that is not loaded. A pack with no supplemental file is decided from the
+ * file listing alone, which keeps booting from fetching the card files of every pack on disk.
+ */
+async function readUnloadedStatus(driver: ContentDriver, id: string): Promise<PackStatus> {
+  const supplementalFiles = jsonFiles(await driver.listFiles(`packs/${id}/supplemental`));
+  if (supplementalFiles.length > 0) {
+    const { cards } = await readCards(driver, id);
+    return supplementalStatus(cards, await readSupplemental(driver, id));
+  }
+  const hasCards = jsonFiles(await driver.listFiles(`packs/${id}/cards`)).length > 0;
+  const counts = { cardCount: 0, supplementalCount: 0, hasCards };
+  return hasCards
+    ? { state: 'no-supplemental', reason: NO_SUPPLEMENTAL_REASON, ...counts }
+    : { state: 'playable', ...counts };
+}
+
+/**
+ * What the pack has on disk in images. An official pack still downloads a card's image the first
+ * time the card is shown; a user pack never does.
+ */
+async function readImageStatus(
+  driver: ContentDriver,
+  id: string,
+  origin: PackDescription['origin'],
+  hasCards: boolean,
+): Promise<Pick<PackDescription, 'imageCount' | 'imageNote'>> {
+  const files = [
+    ...(await driver.listFiles(`packs/${id}/assets/cards`)),
+    ...(await driver.listFiles(`.cache/images/${id}`)),
+  ];
+  const imageCount = files.filter((name) => name.toLowerCase().endsWith('.png')).length;
+  if (imageCount > 0 || !hasCards) return { imageCount };
+  return { imageCount, imageNote: origin === 'user' ? 'no images' : 'no images downloaded yet' };
+}
+
 /**
  * One description per folder in `packs/`: loaded packs from the loader's result, failed ones with
- * the loader's reason, the rest by reading only their manifest (no card files). The single place
- * that decides what "Playable" and "Data only" mean (Q45).
+ * the loader's reason, the rest from their files. The single place that decides what each pack
+ * state means (Q45, #649).
  */
 async function describePacks(
   driver: ContentDriver,
@@ -377,39 +456,39 @@ async function describePacks(
   for (const id of (await driver.listDirs('packs')).sort()) {
     const pack = loadedById.get(id);
     if (pack) {
+      const { hasCards, ...status } = supplementalStatus(pack.cards, pack.supplemental);
       descriptions.push({
         id,
         name: pack.manifest.name,
         origin: pack.manifest.origin,
         enabled: true,
-        state: pack.supplementalCount > 0 ? 'playable' : 'data-only',
-        cardCount: pack.cardCount,
-        supplementalCount: pack.supplementalCount,
+        ...status,
+        ...(await readImageStatus(driver, id, pack.manifest.origin, hasCards)),
         lockedScenarios: [],
       });
       continue;
     }
     const failure = failureById.get(id);
+    const known = failure && failedStatus(failure.reason, failure.blockedBy !== undefined);
     let name = id;
     let origin: PackDescription['origin'];
-    let manifestError: string | undefined;
+    let status: PackStatus;
     try {
       const manifest = await readManifest(driver, id);
       name = manifest.name;
       origin = manifest.origin;
+      status = known ?? (await readUnloadedStatus(driver, id));
     } catch (error) {
-      manifestError = describeError(error);
+      status = known ?? failedStatus(describeError(error), false);
     }
-    const reason = failure?.reason ?? manifestError;
+    const { hasCards, ...shown } = status;
     descriptions.push({
       id,
       name,
       origin,
       enabled: failure !== undefined,
-      state: reason === undefined ? 'data-only' : failure?.blockedBy ? 'needs-pack' : 'failed',
-      reason,
-      cardCount: 0,
-      supplementalCount: 0,
+      ...shown,
+      ...(await readImageStatus(driver, id, origin, hasCards)),
       lockedScenarios: await readLockedScenarios(driver, id),
     });
   }

@@ -37,7 +37,7 @@ function buildGame(): { state: GameState; guard: CardInstance } {
   const player = state.players[0];
   player.currentForm = 'hero';
   player.activeFormCard = cardCatalog.getCard('01040a')!;
-  const guard = createCardInstance(cardCatalog.getCard('01096')!); // Armored Guard
+  const guard = createCardInstance(cardCatalog.getCard('01130')!); // Whirlwind (6 HP, no Guard)
   player.engagedMinions = [guard];
   return { state, guard };
 }

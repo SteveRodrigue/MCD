@@ -38,11 +38,12 @@ describe('packStatuses', () => {
       r.id,
       r.cardCount,
       r.supplementalCount,
+      r.imageCount,
       r.state,
     ]);
     expect(rows).toEqual([
-      ['aoa', 1, 0, 'data-only'],
-      ['core', 3, 1, 'playable'],
+      ['aoa', 1, 0, 0, 'no-supplemental'],
+      ['core', 3, 1, 0, 'incomplete'],
     ]);
   });
 });

@@ -12,7 +12,7 @@ import {
   SideSchemeCard,
 } from '../../src/engine/models';
 
-describe('VillainZone Side Scheme Zoom & Stacking Context (Issue #148)', () => {
+describe('VillainZone Side Scheme stacking (Issue #148, #653)', () => {
   const villainCard = cardCatalog.getCard('01094') as VillainCard;
   const mainSchemeCard = cardCatalog.getCard('01097b') as MainSchemeCard;
   const sideSchemeCard = cardCatalog.getCard('01107') as SideSchemeCard;
@@ -57,15 +57,14 @@ describe('VillainZone Side Scheme Zoom & Stacking Context (Issue #148)', () => {
     );
   }
 
-  it('renders root section with hover:z-raised focus-within:z-raised stacking classes', () => {
+  it('does not raise the zone on hover: the zoom floats in its own corner layer', () => {
     const { container } = renderVillainZone();
     const rootSection = container.querySelector('[data-testid="villain-zone"]');
     expect(rootSection).not.toBeNull();
-    expect(rootSection?.className).toContain('hover:z-raised');
-    expect(rootSection?.className).toContain('focus-within:z-raised');
+    expect(rootSection?.className).not.toContain('hover:z-');
   });
 
-  it('renders side schemes column wrapper with relative z-content hover:z-zoom focus-within:z-zoom', () => {
+  it('renders side schemes column wrapper with relative z-content and no hover raise', () => {
     renderVillainZone();
     const threatBadge = screen.getByText(/⚠️/i);
     const itemWrapper = threatBadge.parentElement!;
@@ -74,8 +73,7 @@ describe('VillainZone Side Scheme Zoom & Stacking Context (Issue #148)', () => {
 
     expect(columnWrapper.className).toContain('relative');
     expect(columnWrapper.className).toContain('z-content');
-    expect(columnWrapper.className).toContain('hover:z-zoom');
-    expect(columnWrapper.className).toContain('focus-within:z-zoom');
+    expect(columnWrapper.className).not.toContain('hover:z-');
   });
 
   it('renders active side schemes container with overflow-visible and without overflow-y-auto or max-h-', () => {
@@ -89,14 +87,13 @@ describe('VillainZone Side Scheme Zoom & Stacking Context (Issue #148)', () => {
     expect(listContainer.className).not.toContain('max-h-');
   });
 
-  it('renders each active side scheme card item wrapper with relative z-content hover:z-zoom focus-within:z-zoom', () => {
+  it('renders each active side scheme card item wrapper with relative z-content and no hover raise', () => {
     renderVillainZone();
     const threatBadge = screen.getByText(/⚠️/i);
     const itemWrapper = threatBadge.parentElement!;
 
     expect(itemWrapper.className).toContain('relative');
     expect(itemWrapper.className).toContain('z-content');
-    expect(itemWrapper.className).toContain('hover:z-zoom');
-    expect(itemWrapper.className).toContain('focus-within:z-zoom');
+    expect(itemWrapper.className).not.toContain('hover:z-');
   });
 });

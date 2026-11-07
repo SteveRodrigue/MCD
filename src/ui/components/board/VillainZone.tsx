@@ -155,7 +155,7 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
         data-testid="villain-zone"
         title="VILLAIN & SCENARIO ZONE"
         icon={<Skull className="w-3.5 h-3.5 text-comic-red" />}
-        className="min-w-0 hover:z-raised focus-within:z-raised"
+        className="min-w-0"
         bodyClassName="p-4"
         right={
           (sideSchemes.length === 0 || outOfPlayEmpty) && (
@@ -438,7 +438,7 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
           {environments.length > 0 && (
             <div
               data-testid="environments-panel"
-              className={`flex-1 min-w-[200px] flex flex-col gap-2 p-3 relative z-content hover:z-zoom focus-within:z-zoom ${style.inset}`}
+              className={`flex-1 min-w-[200px] flex flex-col gap-2 p-3 relative z-content ${style.inset}`}
             >
               <div
                 className={`flex items-center gap-1.5 text-xs font-bold uppercase border-b border-current/20 pb-1.5 ${style.muted}`}
@@ -453,7 +453,7 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
                   return (
                     <div
                       key={environment.instanceId}
-                      className={`relative z-content hover:z-zoom focus-within:z-zoom ${extraLeftClass}`}
+                      className={`relative z-content ${extraLeftClass}`}
                       style={extraBottomPx > 0 ? { marginBottom: `${extraBottomPx}px` } : undefined}
                     >
                       <CardAttachmentFan
@@ -472,7 +472,7 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
           {sideSchemes.length > 0 && (
             <div
               data-testid="side-schemes-panel"
-              className={`flex-1 min-w-[200px] flex flex-col gap-2 p-3 relative z-content hover:z-zoom focus-within:z-zoom ${style.inset}`}
+              className={`flex-1 min-w-[200px] flex flex-col gap-2 p-3 relative z-content ${style.inset}`}
             >
               <div
                 className={`flex items-center gap-1.5 text-xs font-bold uppercase border-b border-current/20 pb-1.5 ${style.muted}`}
@@ -490,7 +490,7 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
                   return (
                     <div
                       key={scheme.instanceId}
-                      className={`flex flex-col items-center gap-1 relative z-content hover:z-zoom focus-within:z-zoom ${extraLeftClass}`}
+                      className={`flex flex-col items-center gap-1 relative z-content ${extraLeftClass}`}
                       style={extraBottomPx > 0 ? { marginBottom: `${extraBottomPx}px` } : undefined}
                     >
                       <CardAttachmentFan

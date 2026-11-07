@@ -108,7 +108,6 @@ export const BoostEffectModal: React.FC<BoostEffectModalProps> = ({
                   size="md"
                   showTokens={false}
                   enableHoverZoom={false}
-                  enableHoverLift={false}
                   enableContextMenu={false}
                 />
                 <BoostIconsPill icons={boostIcons} star={hasStar} />

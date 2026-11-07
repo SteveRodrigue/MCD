@@ -101,7 +101,7 @@ export const RemovedFromGameBox: React.FC<RemovedFromGameBoxProps> = ({
         data-testid="removed-from-game-box"
         title="OUT OF PLAY"
         icon={<Archive className="w-3.5 h-3.5" />}
-        className="hover:z-raised focus-within:z-raised shrink-0"
+        className="shrink-0"
         bodyClassName="p-4"
       >
         <div

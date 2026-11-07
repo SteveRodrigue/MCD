@@ -296,7 +296,9 @@ describe('DecisionPromptModal Card Preview (Issue #104)', () => {
     await act(async () => {
       fireEvent.mouseEnter(thumbWrapper);
     });
-    expect(screen.getByTestId(`card-hover-preview-${webShooter.code}`)).toBeDefined();
+    expect(
+      document.body.querySelector(`[data-card-zoom-layer="${webShooter.code}"]`),
+    ).not.toBeNull();
   });
 
   it('card-based decision options render a thumbnail via option.cardCode only (no param/instance fallbacks)', async () => {
@@ -398,7 +400,9 @@ describe('DecisionPromptModal Card Preview (Issue #104)', () => {
     await act(async () => {
       fireEvent.mouseEnter(thumbWrapper);
     });
-    expect(screen.getByTestId(`card-hover-preview-${energyDaggers.code}`)).toBeDefined();
+    expect(
+      document.body.querySelector(`[data-card-zoom-layer="${energyDaggers.code}"]`),
+    ).not.toBeNull();
   });
 
   it('tableau discard prompt renders dynamic title, card options with thumbnails, and fires selection callback', async () => {

@@ -864,6 +864,7 @@ export const EFFECT_PARAM_SCHEMAS = {
         label: 'Dynamic Bonus Damage',
         description: BONUS_DESCRIPTION,
       }),
+      target: target('Target', 'CHOSEN_ENEMY'),
     })
     .strict(),
   VILLAIN_AND_ENGAGED_MINIONS_ATTACK: effectOnly(),

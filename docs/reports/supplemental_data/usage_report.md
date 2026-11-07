@@ -76,7 +76,7 @@ These cards are currently isolated in [`docs/ambiguities/`](../../ambiguities/RE
 | `VILLAIN` | **31** | 27 | [Inspect Cards](detailed_reports/target_selectors_usage.md#villain) |
 | `SELF` | **29** | 24 | [Inspect Cards](detailed_reports/target_selectors_usage.md#self) |
 | `ALL_PLAYERS` | **17** | 17 | [Inspect Cards](detailed_reports/target_selectors_usage.md#all-players) |
-| `CHOSEN_ENEMY` | **16** | 16 | [Inspect Cards](detailed_reports/target_selectors_usage.md#chosen-enemy) |
+| `CHOSEN_ENEMY` | **17** | 17 | [Inspect Cards](detailed_reports/target_selectors_usage.md#chosen-enemy) |
 | `SELF_IDENTITY` | **12** | 11 | [Inspect Cards](detailed_reports/target_selectors_usage.md#self-identity) |
 | `CHOSEN_SCHEME` | **11** | 10 | [Inspect Cards](detailed_reports/target_selectors_usage.md#chosen-scheme) |
 | `SELF_HERO` | **10** | 8 | [Inspect Cards](detailed_reports/target_selectors_usage.md#self-hero) |

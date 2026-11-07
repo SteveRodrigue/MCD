@@ -35,7 +35,7 @@ import { resolveEntityByInstanceId } from '../../effects/target-resolver';
 import { nextEngineId } from '../../state/rng';
 import {
   chooseInitialTarget,
-  describeTarget,
+  describeTargetAmong,
   getValidStepTargets,
   targetChoiceOptions,
 } from '../../effects/target-choice';
@@ -52,7 +52,7 @@ interface HostKind {
   choiceFlag: 'isAttachmentMinionChoice' | 'isAttachmentAllyChoice' | 'isAttachmentEnemyChoice';
   title: string;
   onomatopoeia: string;
-  /** Display name for a host picked explicitly, or the fallback when none is picked. */
+  /** The log's name for a host picked explicitly, or the fallback when none is picked. */
   describe: (state: GameState, hostId: string | undefined) => string;
 }
 
@@ -63,7 +63,10 @@ const findControlled = (
 ): string | undefined => {
   for (const p of state.players) {
     const found = p[zone]?.find((c) => c.instanceId === instanceId);
-    if (found) return `${found.card.name} (${p.name})`;
+    if (found) {
+      const hero = p.hero?.name || p.name;
+      return `${found.card.name} (${zone === 'engagedMinions' ? `engaged with ${hero}` : hero})`;
+    }
   }
   return undefined;
 };
@@ -150,8 +153,7 @@ export function resolveChosenHostAttachment(
   );
   if (candidates.length > 1) {
     const options: DecisionPromptOption[] = candidates.map((target) => {
-      const label = describe(nextState, target.id);
-      const { cardCode } = describeTarget(target);
+      const { label, cardCode } = describeTargetAmong(target, candidates);
       return {
         id: target.id,
         label,

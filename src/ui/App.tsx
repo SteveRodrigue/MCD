@@ -270,7 +270,9 @@ const AppContent: React.FC = () => {
 
           {stage === 'IN_GAME' && gameState && (
             <GameSessionProvider state={gameState} dispatch={handleDispatchAction}>
-              <CardArtHeroes players={gameState.players}>
+              <CardArtHeroes
+                players={[...gameState.players, ...(gameState.eliminatedPlayers ?? [])]}
+              >
                 <GameBoard onReset={handleReset} />
               </CardArtHeroes>
             </GameSessionProvider>

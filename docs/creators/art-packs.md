@@ -150,7 +150,7 @@ Some packs belong to one hero, such as an Organized Play pack. List the hero's c
   "name": "Black Panther Organized Play",
   "description": "Organized Play art for both versions of Black Panther.",
   "credit": { "author": "Who made it", "sourceUrl": "https://example.com/op", "unofficial": false },
-  "heroes": ["01040a", "<code of the second version>"],
+  "heroes": ["01040a", "51001a"],
   "cards": {
     "01040a": [{ "file": "01040a.png" }],
     "01002": [{ "file": "shared_card.png" }]

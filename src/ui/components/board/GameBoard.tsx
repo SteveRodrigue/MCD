@@ -569,12 +569,14 @@ const GameTable: React.FC<GameBoardProps> = ({ onReset }) => {
         </div>
 
         {/* 3. 1960s Daily Bugle Newspaper Action Popover */}
-        <DailyBugleActionNewspaper
-          report={legalReport}
-          isOpen={isNewspaperOpen}
-          onClose={() => setIsNewspaperOpen(false)}
-          onSelectAction={handleSelectNewspaperAction}
-        />
+        <CardArtSeat playerId={activePlayer.id}>
+          <DailyBugleActionNewspaper
+            report={legalReport}
+            isOpen={isNewspaperOpen}
+            onClose={() => setIsNewspaperOpen(false)}
+            onSelectAction={handleSelectNewspaperAction}
+          />
+        </CardArtSeat>
 
         {/* 5. Automatic End Turn Confirmation Modal */}
         <EndTurnConfirmationModal
